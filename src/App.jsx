@@ -29,18 +29,11 @@ function App() {
   }, []);
 
   useEffect(() => {
-    // Check for admin route in URL
-    const checkAdminRoute = () => {
-      if (window.location.pathname === '/admin' || window.location.hash === '#admin') {
-        setShowAdmin(true);
-      }
-    };
-    
-    checkAdminRoute();
-    
-    // Listen for hash changes
-    window.addEventListener('hashchange', checkAdminRoute);
-    return () => window.removeEventListener('hashchange', checkAdminRoute);
+    // Check for admin access via URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('admin') === 'true' || window.location.hash === '#admin') {
+      setShowAdmin(true);
+    }
   }, []);
 
   if (loading) {
