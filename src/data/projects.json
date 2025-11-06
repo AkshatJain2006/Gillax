@@ -1,0 +1,36 @@
+{
+  "projects": [
+    {
+      "id": 1,
+      "title": "Epic Gaming Montage",
+      "description": "High-energy gaming montage with smooth transitions and effects",
+      "category": "gaming",
+      "youtubeLink": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      "thumbnail": "https://via.placeholder.com/400x225/6C63FF/white?text=Gaming+Montage"
+    },
+    {
+      "id": 2,
+      "title": "Educational Explainer Video",
+      "description": "Clean and engaging educational content with motion graphics",
+      "category": "education",
+      "youtubeLink": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      "thumbnail": "https://via.placeholder.com/400x225/A66BFF/white?text=Education+Video"
+    },
+    {
+      "id": 3,
+      "title": "Brand Motion Graphics",
+      "description": "Dynamic brand intro with custom animations",
+      "category": "motion",
+      "youtubeLink": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      "thumbnail": "https://via.placeholder.com/400x225/6C63FF/white?text=Motion+Graphics"
+    },
+    {
+      "id": 4,
+      "title": "3D Product Showcase",
+      "description": "Stunning 3D animation showcasing product features",
+      "category": "3d",
+      "youtubeLink": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+      "thumbnail": "https://via.placeholder.com/400x225/A66BFF/white?text=3D+Animation"
+    }
+  ]
+}
