@@ -9,40 +9,10 @@ const ClientReviews = () => {
     const loadReviews = async () => {
       try {
         const data = await ApiService.getReviews();
-        setReviews(data || []);
+        setReviews(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error('Failed to load reviews:', error);
-        // Fallback to default reviews
-        const defaultReviews = [
-          {
-            _id: 1,
-            name: "Alex Johnson",
-            role: "Gaming Content Creator",
-            review: "GillaX completely transformed my channel. Their editing style is exactly what modern gaming content needs - fast, smooth, and engaging.",
-            rating: 5,
-            platform: "YouTube",
-            avatar: "AJ"
-          },
-          {
-            _id: 2,
-            name: "Sarah Chen", 
-            role: "Educational YouTuber",
-            review: "The way they handle educational content is amazing. Complex topics become visually appealing and easy to understand.",
-            rating: 5,
-            platform: "YouTube", 
-            avatar: "SC"
-          },
-          {
-            _id: 3,
-            name: "Mike Rodriguez",
-            role: "Tech Reviewer", 
-            review: "Professional quality that rivals big tech channels. My reviews now have that premium look that keeps viewers engaged.",
-            rating: 5,
-            platform: "Twitch",
-            avatar: "MR"
-          }
-        ];
-        setReviews(defaultReviews);
+        console.error('Failed to load reviews from API:', error);
+        setReviews([]);
       }
     };
     
@@ -94,9 +64,9 @@ const ClientReviews = () => {
         </motion.h2>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {Array.isArray(reviews) && reviews.map((review, index) => (
+          {reviews && reviews.length > 0 ? reviews.map((review, index) => (
             <motion.div
-              key={index}
+              key={review._id || index}
               className="bg-black/50 backdrop-blur-sm border border-blue-500/20 rounded-2xl p-6 relative"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -110,7 +80,7 @@ const ClientReviews = () => {
               </p>
 
               <div className="flex space-x-1 mb-4">
-                {[...Array(review.rating)].map((_, i) => (
+                {[...Array(review.rating || 5)].map((_, i) => (
                   <span key={i} className="text-yellow-400 text-lg">★</span>
                 ))}
               </div>
@@ -118,17 +88,21 @@ const ClientReviews = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                    {review.avatar}
+                    {review.avatar || 'U'}
                   </div>
                   <div>
-                    <div className="text-white font-semibold text-sm">{review.name}</div>
-                    <div className="text-gray-400 text-xs">{review.role}</div>
+                    <div className="text-white font-semibold text-sm">{review.name || 'Anonymous'}</div>
+                    <div className="text-gray-400 text-xs">{review.role || 'Client'}</div>
                   </div>
                 </div>
-                <div className="text-xs text-blue-400 font-medium">{review.platform}</div>
+                <div className="text-xs text-blue-400 font-medium">{review.platform || 'Web'}</div>
               </div>
             </motion.div>
-          )) || <div className="text-white text-center col-span-3">No reviews available</div>}
+          )) : (
+            <div className="text-white text-center col-span-3">
+              {reviews.length === 0 ? 'No approved reviews yet.' : 'Loading reviews...'}
+            </div>
+          )}
         </div>
 
         <motion.div
