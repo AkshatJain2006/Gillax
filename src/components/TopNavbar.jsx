@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import NavAuth from './NavAuth';
 
-const TopNavbar = ({ currentPage, setCurrentPage }) => {
+const TopNavbar = ({ currentPage, setCurrentPage, currentUser, onLogin, onLogout, onAdminAccess }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   const navItems = [
@@ -24,7 +25,7 @@ const TopNavbar = ({ currentPage, setCurrentPage }) => {
           {/* Logo */}
           <div className="flex items-center space-x-3">
             <motion.div 
-              className="flex items-center space-x-3 relative group"
+              className="flex items-center space-x-3"
               whileHover={{ scale: 1.02 }}
             >
               <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
@@ -37,17 +38,6 @@ const TopNavbar = ({ currentPage, setCurrentPage }) => {
               <h1 className="text-xl font-bold text-white premium-font">
                 GillaX
               </h1>
-              
-              {/* Admin Button */}
-              <motion.button
-                onClick={() => window.location.href = '/admin'}
-                className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                whileHover={{ scale: 1.2 }}
-                whileTap={{ scale: 0.9 }}
-                title="Admin Panel"
-              >
-                <span className="text-white text-xs font-bold">A</span>
-              </motion.button>
             </motion.div>
           </div>
 
@@ -93,18 +83,13 @@ const TopNavbar = ({ currentPage, setCurrentPage }) => {
               </motion.div>
             ))}
             
-            {/* Contact indicator */}
-            <motion.div 
-              className="flex items-center space-x-2 text-gray-400 hover:text-blue-400 transition-colors cursor-pointer"
-              whileHover={{ scale: 1.05 }}
-            >
-              <motion.div 
-                className="w-2 h-2 bg-green-500 rounded-full"
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <span className="text-xs font-medium">Available</span>
-            </motion.div>
+            {/* Auth Component */}
+            <NavAuth 
+              currentUser={currentUser}
+              onLogin={onLogin}
+              onLogout={onLogout}
+              onAdminAccess={onAdminAccess}
+            />
           </div>
 
           {/* Mobile Menu Button */}
@@ -186,6 +171,16 @@ const TopNavbar = ({ currentPage, setCurrentPage }) => {
               </button>
             </motion.div>
           ))}
+          
+          {/* Mobile Auth */}
+          <div className="mt-4 pt-4 border-t border-gray-700">
+            <NavAuth 
+              currentUser={currentUser}
+              onLogin={onLogin}
+              onLogout={onLogout}
+              onAdminAccess={onAdminAccess}
+            />
+          </div>
         </motion.div>
       </div>
     </motion.nav>

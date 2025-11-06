@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ApiService from '../services/api';
 
-const AdminPanel = () => {
+const AdminPanel = ({ onLogout }) => {
   const [projects, setProjects] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [password, setPassword] = useState('');
   const [newProject, setNewProject] = useState({
     title: '',
     description: '',
@@ -109,27 +107,23 @@ const AdminPanel = () => {
     }
   }, [activeTab]);
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    try {
-      const response = await ApiService.loginUser({ username: password, password });
-      if (response.token) {
-        localStorage.setItem('adminToken', response.token);
-        localStorage.setItem('currentUser', JSON.stringify(response.user));
-        setCurrentUser(response.user);
-        setIsAdmin(true);
-      } else {
-        alert('Invalid credentials');
-      }
-    } catch (error) {
-      // Fallback to old password system
-      if (password === 'gillax2024') {
-        setIsAdmin(true);
-        setCurrentUser({ username: 'admin', role: 'admin' });
-      } else {
-        alert('Invalid credentials');
+  // Load current user on component mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+      try {
+        setCurrentUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Failed to parse user data');
       }
     }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('currentUser');
+    setCurrentUser(null);
+    if (onLogout) onLogout();
   };
 
   const addProject = async (e) => {
@@ -353,7 +347,9 @@ const AdminPanel = () => {
     try {
       await ApiService.createUser(newUser);
       setNewUser({ username: '', email: '', password: '', role: 'viewer' });
-      loadUsers();
+      // Reload users after adding
+      const data = await ApiService.getUsers();
+      setUsers(data);
       alert('User created successfully!');
     } catch (error) {
       console.error('Failed to create user:', error);
@@ -373,34 +369,34 @@ const AdminPanel = () => {
     }
   };
 
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <form onSubmit={handleLogin} className="bg-gray-800 p-8 rounded-lg">
-          <h2 className="text-2xl font-bold mb-6 text-white">Admin Login</h2>
-          <input
-            type="password"
-            placeholder="Enter admin password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 bg-gray-700 text-white rounded mb-4"
-            required
-          />
-          <button
-            type="submit"
-            className="w-full py-3 bg-primary text-white rounded hover:bg-secondary"
-          >
-            Login
-          </button>
-        </form>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-gray-900 p-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-white mb-8">Admin Panel</h1>
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-white">Admin Panel</h1>
+          <div className="flex items-center space-x-4">
+            {currentUser && (
+              <div className="text-white">
+                <span className="text-gray-400">Welcome, </span>
+                <span className="font-semibold">{currentUser.username}</span>
+                <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                  currentUser.role === 'admin' ? 'bg-red-600' : 
+                  currentUser.role === 'editor' ? 'bg-blue-600' : 'bg-gray-600'
+                } text-white`}>
+                  {currentUser.role?.toUpperCase()}
+                </span>
+              </div>
+            )}
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
         
         {/* Tab Navigation */}
         <div className="flex space-x-4 mb-8">
@@ -433,12 +429,14 @@ const AdminPanel = () => {
               </span>
             )}
           </button>
-          <button
-            onClick={() => setActiveTab('users')}
-            className={`px-6 py-3 rounded ${activeTab === 'users' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
-          >
-            Users
-          </button>
+          {currentUser?.role === 'admin' && (
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`px-6 py-3 rounded ${activeTab === 'users' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
+            >
+              Users
+            </button>
+          )}
         </div>
         
         {activeTab === 'portfolio' && (
@@ -734,7 +732,7 @@ const AdminPanel = () => {
         </div>
         )}
         
-        {activeTab === 'users' && (
+        {activeTab === 'users' && currentUser?.role === 'admin' && (
         <div className="bg-gray-800 p-6 rounded-lg mb-8">
           <h2 className="text-xl font-semibold text-white mb-4">Add New User</h2>
           <form onSubmit={addUser} className="space-y-4">
@@ -785,7 +783,7 @@ const AdminPanel = () => {
           <h2 className="text-xl font-semibold text-white mb-4">
             {activeTab === 'portfolio' ? 'Manage Projects' : activeTab === 'otherwork' ? 'Manage Works' : 'Manage Reviews'}
           </h2>
-          {activeTab === 'users' && (
+          {activeTab === 'users' && currentUser?.role === 'admin' && (
             users.length === 0 ? (
               <p className="text-gray-400">No users created yet.</p>
             ) : (

@@ -20,7 +20,30 @@ import AdminPanel from './components/AdminPanel';
 const MainApp = () => {
   const [currentPage, setCurrentPage] = useState('home');
   const [showAdmin, setShowAdmin] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const location = useLocation();
+  
+  useEffect(() => {
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+      setCurrentUser(JSON.parse(savedUser));
+    }
+  }, []);
+  
+  const handleLogin = (user) => {
+    setCurrentUser(user);
+  };
+  
+  const handleAdminAccess = () => {
+    if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'editor')) {
+      setShowAdmin(true);
+    }
+  };
+  
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setShowAdmin(false);
+  };
   
   useEffect(() => {
     const checkHash = () => {
@@ -35,7 +58,7 @@ const MainApp = () => {
   }, []);
   
   if (showAdmin) {
-    return <AdminPanel />;
+    return <AdminPanel onLogout={handleLogout} />;
   }
 
   return (
@@ -67,13 +90,20 @@ const MainApp = () => {
         <PremiumEffects />
         {location.pathname !== '/admin' && !showAdmin && (
           <>
-            <TopNavbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
+            <TopNavbar 
+              currentPage={currentPage} 
+              setCurrentPage={setCurrentPage}
+              currentUser={currentUser}
+              onLogin={handleLogin}
+              onLogout={handleLogout}
+              onAdminAccess={handleAdminAccess}
+            />
             <ScrollProgress />
           </>
         )}
         
         <Routes>
-          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin" element={<AdminPanel onLogout={handleLogout} />} />
           <Route path="/*" element={
             <div className="pt-20">
               {currentPage === 'home' && (
@@ -92,20 +122,7 @@ const MainApp = () => {
               <ClientReviews />
               <Chatbot />
               
-              {/* Admin Access Button */}
-              <motion.div 
-                className="fixed bottom-4 right-4 z-30"
-                initial={{ opacity: 0.1 }}
-                whileHover={{ opacity: 1 }}
-              >
-                <a 
-                  href="#admin"
-                  onClick={() => window.location.hash = 'admin'}
-                  className="text-xs px-2 py-1 bg-black/60 border border-white/20 text-gray-400 rounded backdrop-blur-sm"
-                >
-                  Admin
-                </a>
-              </motion.div>
+
             </div>
           } />
         </Routes>

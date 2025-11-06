@@ -120,12 +120,16 @@ class ApiService {
 
   async createUser(userData) {
     const token = localStorage.getItem('adminToken');
+    const headers = { 'Content-Type': 'application/json' };
+    
+    // Add auth header only if token exists (for admin creating users)
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
     const response = await fetch(`${API_BASE_URL}/users/register`, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
+      headers,
       body: JSON.stringify(userData)
     });
     return response.json();
