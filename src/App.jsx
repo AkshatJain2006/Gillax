@@ -29,9 +29,18 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (window.location.pathname === '/admin') {
-      setShowAdmin(true);
-    }
+    // Check for admin route in URL
+    const checkAdminRoute = () => {
+      if (window.location.pathname === '/admin' || window.location.hash === '#admin') {
+        setShowAdmin(true);
+      }
+    };
+    
+    checkAdminRoute();
+    
+    // Listen for hash changes
+    window.addEventListener('hashchange', checkAdminRoute);
+    return () => window.removeEventListener('hashchange', checkAdminRoute);
   }, []);
 
   if (loading) {
