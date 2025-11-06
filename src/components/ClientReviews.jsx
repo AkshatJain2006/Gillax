@@ -1,46 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import reviewsData from '../data/reviews.json';
 
 const ClientReviews = () => {
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
     // Load reviews from JSON file or set defaults
-    if (reviewsData.length > 0) {
-      setReviews(reviewsData);
-    } else {
-      const defaultReviews = [
-        {
-          id: 1,
-          name: "Alex Johnson",
-          role: "Gaming Content Creator",
-          review: "GillaX completely transformed my channel. Their editing style is exactly what modern gaming content needs - fast, smooth, and engaging.",
-          rating: 5,
-          platform: "YouTube",
-          avatar: "AJ"
-        },
-        {
-          id: 2,
-          name: "Sarah Chen", 
-          role: "Educational YouTuber",
-          review: "The way they handle educational content is amazing. Complex topics become visually appealing and easy to understand.",
-          rating: 5,
-          platform: "YouTube", 
-          avatar: "SC"
-        },
-        {
-          id: 3,
-          name: "Mike Rodriguez",
-          role: "Tech Reviewer", 
-          review: "Professional quality that rivals big tech channels. My reviews now have that premium look that keeps viewers engaged.",
-          rating: 5,
-          platform: "Twitch",
-          avatar: "MR"
+    const loadReviews = async () => {
+      try {
+        const response = await fetch('/reviews.json');
+        if (response.ok) {
+          const data = await response.json();
+          setReviews(data);
+        } else {
+          throw new Error('Failed to load reviews');
         }
-      ];
-      setReviews(defaultReviews);
-    }
+      } catch (error) {
+        // Fallback to default reviews
+        const defaultReviews = [
+          {
+            id: 1,
+            name: "Alex Johnson",
+            role: "Gaming Content Creator",
+            review: "GillaX completely transformed my channel. Their editing style is exactly what modern gaming content needs - fast, smooth, and engaging.",
+            rating: 5,
+            platform: "YouTube",
+            avatar: "AJ"
+          },
+          {
+            id: 2,
+            name: "Sarah Chen", 
+            role: "Educational YouTuber",
+            review: "The way they handle educational content is amazing. Complex topics become visually appealing and easy to understand.",
+            rating: 5,
+            platform: "YouTube", 
+            avatar: "SC"
+          },
+          {
+            id: 3,
+            name: "Mike Rodriguez",
+            role: "Tech Reviewer", 
+            review: "Professional quality that rivals big tech channels. My reviews now have that premium look that keeps viewers engaged.",
+            rating: 5,
+            platform: "Twitch",
+            avatar: "MR"
+          }
+        ];
+        setReviews(defaultReviews);
+      }
+    };
+    
+    loadReviews();
   }, []);
 
   const [showForm, setShowForm] = useState(false);

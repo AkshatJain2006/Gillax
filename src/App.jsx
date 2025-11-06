@@ -19,7 +19,24 @@ import AdminPanel from './components/AdminPanel';
 
 const MainApp = () => {
   const [currentPage, setCurrentPage] = useState('home');
+  const [showAdmin, setShowAdmin] = useState(false);
   const location = useLocation();
+  
+  useEffect(() => {
+    const checkHash = () => {
+      if (window.location.hash === '#admin') {
+        setShowAdmin(true);
+      }
+    };
+    
+    checkHash();
+    window.addEventListener('hashchange', checkHash);
+    return () => window.removeEventListener('hashchange', checkHash);
+  }, []);
+  
+  if (showAdmin) {
+    return <AdminPanel />;
+  }
 
   return (
     <div className="animated-bg min-h-screen relative bg-black">
@@ -48,7 +65,7 @@ const MainApp = () => {
         className="relative z-10"
       >
         <PremiumEffects />
-        {location.pathname !== '/admin' && (
+        {location.pathname !== '/admin' && !showAdmin && (
           <>
             <TopNavbar currentPage={currentPage} setCurrentPage={setCurrentPage} />
             <ScrollProgress />
@@ -74,6 +91,21 @@ const MainApp = () => {
               <Portfolio />
               <ClientReviews />
               <Chatbot />
+              
+              {/* Admin Access Button */}
+              <motion.div 
+                className="fixed bottom-4 right-4 z-30"
+                initial={{ opacity: 0.1 }}
+                whileHover={{ opacity: 1 }}
+              >
+                <a 
+                  href="#admin"
+                  onClick={() => window.location.hash = 'admin'}
+                  className="text-xs px-2 py-1 bg-black/60 border border-white/20 text-gray-400 rounded backdrop-blur-sm"
+                >
+                  Admin
+                </a>
+              </motion.div>
             </div>
           } />
         </Routes>
