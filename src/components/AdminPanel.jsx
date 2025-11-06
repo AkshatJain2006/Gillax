@@ -107,15 +107,28 @@ const AdminPanel = ({ onLogout }) => {
     }
   }, [activeTab]);
 
-  // Load current user on component mount
+  // Load current user on component mount and verify access
   useEffect(() => {
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
       try {
-        setCurrentUser(JSON.parse(savedUser));
+        const user = JSON.parse(savedUser);
+        if (user.role === 'admin' || user.role === 'editor') {
+          setCurrentUser(user);
+        } else {
+          // Unauthorized access - redirect to home
+          window.location.hash = '';
+          window.location.reload();
+        }
       } catch (error) {
         console.error('Failed to parse user data');
+        window.location.hash = '';
+        window.location.reload();
       }
+    } else {
+      // No user logged in - redirect to home
+      window.location.hash = '';
+      window.location.reload();
     }
   }, []);
 

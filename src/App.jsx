@@ -37,6 +37,9 @@ const MainApp = () => {
   const handleAdminAccess = () => {
     if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'editor')) {
       setShowAdmin(true);
+    } else {
+      // Redirect unauthorized users
+      window.location.hash = '';
     }
   };
   
@@ -48,7 +51,23 @@ const MainApp = () => {
   useEffect(() => {
     const checkHash = () => {
       if (window.location.hash === '#admin') {
-        setShowAdmin(true);
+        // Check if user is authenticated and has admin/editor role
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+          try {
+            const user = JSON.parse(savedUser);
+            if (user.role === 'admin' || user.role === 'editor') {
+              setCurrentUser(user);
+              setShowAdmin(true);
+            } else {
+              window.location.hash = '';
+            }
+          } catch (error) {
+            window.location.hash = '';
+          }
+        } else {
+          window.location.hash = '';
+        }
       }
     };
     
@@ -57,7 +76,7 @@ const MainApp = () => {
     return () => window.removeEventListener('hashchange', checkHash);
   }, []);
   
-  if (showAdmin) {
+  if (showAdmin && currentUser && (currentUser.role === 'admin' || currentUser.role === 'editor')) {
     return <AdminPanel onLogout={handleLogout} />;
   }
 
