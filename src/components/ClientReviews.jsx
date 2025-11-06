@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import reviewsData from '../data/reviews.json';
 
 const ClientReviews = () => {
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
-    // Load existing reviews from localStorage
-    const savedReviews = localStorage.getItem('clientReviews');
-    if (savedReviews) {
-      setReviews(JSON.parse(savedReviews));
+    // Load reviews from JSON file or set defaults
+    if (reviewsData.length > 0) {
+      setReviews(reviewsData);
     } else {
-      // Set default reviews if none exist
       const defaultReviews = [
         {
           id: 1,
@@ -41,7 +40,6 @@ const ClientReviews = () => {
         }
       ];
       setReviews(defaultReviews);
-      localStorage.setItem('clientReviews', JSON.stringify(defaultReviews));
     }
   }, []);
 
@@ -67,8 +65,9 @@ const ClientReviews = () => {
       const updatedReviews = [...reviews, reviewWithId];
       setReviews(updatedReviews);
       
-      // Save to localStorage for admin access
-      localStorage.setItem('clientReviews', JSON.stringify(updatedReviews));
+      // Note: In production, this would save to backend/database
+      // For now, reviews are stored in component state only
+      console.log('New review added:', reviewWithId);
       
       setNewReview({ name: '', role: '', review: '', rating: 5, platform: '' });
       setShowForm(false);

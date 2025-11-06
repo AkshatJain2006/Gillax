@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "name": "Alex Johnson",
+    "role": "Gaming Content Creator",
+    "review": "GillaX completely transformed my channel. Their editing style is exactly what modern gaming content needs - fast, smooth, and engaging.",
+    "rating": 5,
+    "platform": "YouTube",
+    "avatar": "AJ"
+  },
+  {
+    "id": 2,
+    "name": "Sarah Chen", 
+    "role": "Educational YouTuber",
+    "review": "The way they handle educational content is amazing. Complex topics become visually appealing and easy to understand.",
+    "rating": 5,
+    "platform": "YouTube", 
+    "avatar": "SC"
+  },
+  {
+    "id": 3,
+    "name": "Mike Rodriguez",
+    "role": "Tech Reviewer", 
+    "review": "Professional quality that rivals big tech channels. My reviews now have that premium look that keeps viewers engaged.",
+    "rating": 5,
+    "platform": "Twitch",
+    "avatar": "MR"
+  }
+]

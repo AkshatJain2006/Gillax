@@ -25,11 +25,12 @@ const AdminPanel = () => {
   const [editingWork, setEditingWork] = useState(null);
 
   useEffect(() => {
-    // Load reviews from localStorage
-    const savedReviews = localStorage.getItem('clientReviews');
-    if (savedReviews) {
-      setReviews(JSON.parse(savedReviews));
-    }
+    // Load reviews from JSON file
+    import('../data/reviews.json').then(data => {
+      setReviews(data.default || data);
+    }).catch(() => {
+      setReviews([]);
+    });
     
     // Load categories from localStorage
     const savedCategories = localStorage.getItem('workCategories');
@@ -105,8 +106,9 @@ const AdminPanel = () => {
   const deleteReview = (reviewId) => {
     const updatedReviews = reviews.filter(r => r.id !== reviewId);
     setReviews(updatedReviews);
-    localStorage.setItem('clientReviews', JSON.stringify(updatedReviews));
-    alert('Review deleted successfully!');
+    // Note: In production, this would update the JSON file via backend
+    console.log('Review deleted (local state only):', reviewId);
+    alert('Review deleted from display (changes are temporary)');
   };
 
   const addCategory = (e) => {
