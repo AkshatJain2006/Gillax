@@ -1,39 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ApiService from '../services/api';
 
 const Portfolio = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  const projects = [
-    {
-      id: 1,
-      title: "Gaming Montage",
-      category: "gaming",
-      thumbnail: "https://via.placeholder.com/400x225/6C63FF/white?text=Gaming+Video",
-      videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
-    },
-    {
-      id: 2,
-      title: "Educational Explainer",
-      category: "education",
-      thumbnail: "https://via.placeholder.com/400x225/A66BFF/white?text=Education+Video",
-      videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
-    },
-    {
-      id: 3,
-      title: "Motion Graphics Intro",
-      category: "motion",
-      thumbnail: "https://via.placeholder.com/400x225/6C63FF/white?text=Motion+Graphics",
-      videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
-    },
-    {
-      id: 4,
-      title: "3D Animation",
-      category: "3d",
-      thumbnail: "https://via.placeholder.com/400x225/A66BFF/white?text=3D+Animation",
-      videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ"
-    }
-  ];
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const data = await ApiService.getProjects();
+        setProjects(data);
+      } catch (error) {
+        console.error('Failed to load projects:', error);
+        // Fallback to default projects if API fails
+        setProjects([
+          {
+            _id: 1,
+            title: "Gaming Montage",
+            category: "gaming",
+            youtubeLink: "https://www.youtube.com/embed/dQw4w9WgXcQ"
+          },
+          {
+            _id: 2,
+            title: "Educational Explainer",
+            category: "education",
+            youtubeLink: "https://www.youtube.com/embed/dQw4w9WgXcQ"
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadProjects();
+  }, []);
 
   const categories = [
     { id: 'all', name: 'All Work' },
@@ -75,18 +77,21 @@ const Portfolio = () => {
           ))}
         </div>
         
-        <AnimatePresence mode="wait">
-          <motion.div 
-            key={selectedCategory}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
+        {loading ? (
+          <div className="text-center text-white">Loading projects...</div>
+        ) : (
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={selectedCategory}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-items-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
             {filteredProjects.map((project, index) => (
               <motion.div 
-                key={project.id} 
+                key={project._id} 
                 className="premium-card rounded-2xl overflow-hidden group w-full max-w-md mx-auto"
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -98,7 +103,7 @@ const Portfolio = () => {
               >
                 <div className="aspect-video relative overflow-hidden">
                   <iframe
-                    src={project.videoUrl}
+                    src={project.youtubeLink}
                     title={project.title}
                     className="w-full h-full transition-transform group-hover:scale-105"
                     allowFullScreen
@@ -110,8 +115,9 @@ const Portfolio = () => {
                 </div>
               </motion.div>
             ))}
-          </motion.div>
-        </AnimatePresence>
+            </motion.div>
+          </AnimatePresence>
+        )}
       </div>
     </section>
   );

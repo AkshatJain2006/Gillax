@@ -11,6 +11,7 @@ const AdminPanel = () => {
     youtubeLink: '',
     category: ''
   });
+  const [editingProject, setEditingProject] = useState(null);
   const [newWork, setNewWork] = useState({
     title: '',
     description: '',
@@ -26,6 +27,17 @@ const AdminPanel = () => {
   const [editingWork, setEditingWork] = useState(null);
 
   useEffect(() => {
+    // Load projects from backend API
+    const loadProjects = async () => {
+      try {
+        const data = await ApiService.getProjects();
+        setProjects(data);
+      } catch (error) {
+        console.error('Failed to load projects:', error);
+        setProjects([]);
+      }
+    };
+    
     // Load reviews from backend API
     const loadReviews = async () => {
       try {
@@ -37,7 +49,9 @@ const AdminPanel = () => {
       }
     };
     
-    if (activeTab === 'reviews') {
+    if (activeTab === 'portfolio') {
+      loadProjects();
+    } else if (activeTab === 'reviews') {
       loadReviews();
     }
     
@@ -69,15 +83,17 @@ const AdminPanel = () => {
     }
   };
 
-  const addProject = (e) => {
+  const addProject = async (e) => {
     e.preventDefault();
-    const project = {
-      id: Date.now(),
-      ...newProject
-    };
-    setProjects([...projects, project]);
-    setNewProject({ title: '', description: '', youtubeLink: '', category: '' });
-    alert('Project added successfully!');
+    try {
+      const savedProject = await ApiService.createProject(newProject);
+      setProjects([...projects, savedProject]);
+      setNewProject({ title: '', description: '', youtubeLink: '', category: '' });
+      alert('Project added successfully!');
+    } catch (error) {
+      console.error('Failed to add project:', error);
+      alert('Failed to add project. Please try again.');
+    }
   };
 
   const addWork = (e) => {
@@ -107,9 +123,73 @@ const AdminPanel = () => {
     return url;
   };
 
-  const deleteProject = (id) => {
-    setProjects(projects.filter(p => p.id !== id));
-    alert('Project deleted successfully!');
+  const editProject = (project) => {
+    setEditingProject(project);
+    setNewProject({
+      title: project.title,
+      description: project.description,
+      youtubeLink: project.youtubeLink,
+      category: project.category
+    });
+  };
+
+  const updateProject = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`http://localhost:5000/api/projects/${editingProject._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newProject)
+      });
+      if (response.ok) {
+        const updatedProject = await response.json();
+        const updatedProjects = projects.map(p => 
+          p._id === editingProject._id ? updatedProject : p
+        );
+        setProjects(updatedProjects);
+        setEditingProject(null);
+        setNewProject({ title: '', description: '', youtubeLink: '', category: '' });
+        alert('Project updated successfully!');
+      }
+    } catch (error) {
+      console.error('Failed to update project:', error);
+      alert('Failed to update project. Please try again.');
+    }
+  };
+
+  const cancelProjectEdit = () => {
+    setEditingProject(null);
+    setNewProject({ title: '', description: '', youtubeLink: '', category: '' });
+  };
+
+  const deleteProject = async (id) => {
+    try {
+      await ApiService.deleteProject(id);
+      const updatedProjects = projects.filter(p => p._id !== id);
+      setProjects(updatedProjects);
+      alert('Project deleted successfully!');
+    } catch (error) {
+      console.error('Failed to delete project:', error);
+      alert('Failed to delete project. Please try again.');
+    }
+  };
+
+  const approveReview = async (reviewId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/reviews/${reviewId}/approve`, {
+        method: 'PATCH'
+      });
+      if (response.ok) {
+        const updatedReviews = reviews.map(r => 
+          r._id === reviewId ? { ...r, approved: true } : r
+        );
+        setReviews(updatedReviews);
+        alert('Review approved successfully!');
+      }
+    } catch (error) {
+      console.error('Failed to approve review:', error);
+      alert('Failed to approve review. Please try again.');
+    }
   };
 
   const deleteReview = async (reviewId) => {
@@ -248,8 +328,10 @@ const AdminPanel = () => {
         
         {activeTab === 'portfolio' && (
         <div className="bg-gray-800 p-6 rounded-lg mb-8">
-          <h2 className="text-xl font-semibold text-white mb-4">Add New Project</h2>
-          <form onSubmit={addProject} className="space-y-4">
+          <h2 className="text-xl font-semibold text-white mb-4">
+            {editingProject ? 'Edit Project' : 'Add New Project'}
+          </h2>
+          <form onSubmit={editingProject ? updateProject : addProject} className="space-y-4">
             <input
               type="text"
               placeholder="Project Title"
@@ -286,12 +368,23 @@ const AdminPanel = () => {
               <option value="motion">Motion Graphics</option>
               <option value="3d">3D Animation</option>
             </select>
-            <button
-              type="submit"
-              className="px-6 py-3 bg-primary text-white rounded hover:bg-secondary"
-            >
-              Add Project
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="px-6 py-3 bg-primary text-white rounded hover:bg-secondary"
+              >
+                {editingProject ? 'Update Project' : 'Add Project'}
+              </button>
+              {editingProject && (
+                <button
+                  type="button"
+                  onClick={cancelProjectEdit}
+                  className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </form>
         </div>
         )}
@@ -438,14 +531,29 @@ const AdminPanel = () => {
                         ))}
                       </div>
                     </div>
-                    <button
-                      onClick={() => deleteReview(review._id)}
-                      className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex gap-2">
+                      {!review.approved && (
+                        <button
+                          onClick={() => approveReview(review._id)}
+                          className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                        >
+                          Approve
+                        </button>
+                      )}
+                      <button
+                        onClick={() => deleteReview(review._id)}
+                        className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                   <p className="text-gray-300 text-sm italic">"{review.review}"</p>
+                  <div className="mt-2">
+                    <span className={`text-xs px-2 py-1 rounded ${review.approved ? 'bg-green-600' : 'bg-yellow-600'}`}>
+                      {review.approved ? 'Approved' : 'Pending Approval'}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -463,17 +571,31 @@ const AdminPanel = () => {
             ) : (
               <div className="space-y-4">
                 {projects.map(project => (
-                  <div key={project.id} className="bg-gray-700 p-4 rounded flex justify-between items-center">
-                    <div>
-                      <h3 className="text-white font-semibold">{project.title}</h3>
-                      <p className="text-gray-400 text-sm">{project.category}</p>
+                  <div key={project._id} className="bg-gray-700 p-4 rounded">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <h3 className="text-white font-semibold">{project.title}</h3>
+                        <p className="text-gray-400 text-sm capitalize">{project.category}</p>
+                        <p className="text-gray-300 text-sm mt-1">{project.description}</p>
+                        <a href={project.youtubeLink} target="_blank" rel="noopener noreferrer" className="text-blue-400 text-xs hover:underline">
+                          View on YouTube
+                        </a>
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        <button
+                          onClick={() => editProject(project)}
+                          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteProject(project._id)}
+                          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => deleteProject(project.id)}
-                      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                    >
-                      Delete
-                    </button>
                   </div>
                 ))}
               </div>
