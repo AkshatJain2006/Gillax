@@ -3,8 +3,15 @@ const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api
 class ApiService {
   // Reviews
   async getReviews() {
-    const response = await fetch(`${API_BASE_URL}/reviews`);
-    return response.json();
+    try {
+      const response = await fetch(`${API_BASE_URL}/reviews`);
+      if (!response.ok) throw new Error('Failed to fetch reviews');
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('API Error:', error);
+      return [];
+    }
   }
 
   async getAllReviews() {
@@ -30,8 +37,15 @@ class ApiService {
 
   // Projects
   async getProjects() {
-    const response = await fetch(`${API_BASE_URL}/projects`);
-    return response.json();
+    try {
+      const response = await fetch(`${API_BASE_URL}/projects`);
+      if (!response.ok) throw new Error('Failed to fetch projects');
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('API Error:', error);
+      return [];
+    }
   }
 
   async createProject(projectData) {

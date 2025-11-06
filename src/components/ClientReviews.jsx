@@ -9,7 +9,7 @@ const ClientReviews = () => {
     const loadReviews = async () => {
       try {
         const data = await ApiService.getReviews();
-        setReviews(data);
+        setReviews(data || []);
       } catch (error) {
         console.error('Failed to load reviews:', error);
         // Fallback to default reviews
@@ -94,7 +94,7 @@ const ClientReviews = () => {
         </motion.h2>
 
         <div className="grid md:grid-cols-3 gap-8">
-          {reviews.map((review, index) => (
+          {Array.isArray(reviews) && reviews.map((review, index) => (
             <motion.div
               key={index}
               className="bg-black/50 backdrop-blur-sm border border-blue-500/20 rounded-2xl p-6 relative"
@@ -128,7 +128,7 @@ const ClientReviews = () => {
                 <div className="text-xs text-blue-400 font-medium">{review.platform}</div>
               </div>
             </motion.div>
-          ))}
+          )) || <div className="text-white text-center col-span-3">No reviews available</div>}
         </div>
 
         <motion.div

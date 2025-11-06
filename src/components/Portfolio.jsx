@@ -89,7 +89,7 @@ const Portfolio = () => {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-            {filteredProjects.map((project, index) => (
+            {Array.isArray(filteredProjects) && filteredProjects.map((project, index) => (
               <motion.div 
                 key={project._id} 
                 className="premium-card rounded-2xl overflow-hidden group w-full max-w-md mx-auto"
@@ -114,7 +114,7 @@ const Portfolio = () => {
                   <h3 className="text-xl font-light italic text-white group-hover:text-primary transition-colors">{project.title}</h3>
                 </div>
               </motion.div>
-            ))}
+            )) || <div className="text-white text-center">No projects available</div>}
             </motion.div>
           </AnimatePresence>
         )}
