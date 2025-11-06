@@ -25,6 +25,15 @@ const AdminPanel = () => {
   const [newCategory, setNewCategory] = useState('');
   const [works, setWorks] = useState([]);
   const [editingWork, setEditingWork] = useState(null);
+  const [contacts, setContacts] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [newUser, setNewUser] = useState({
+    username: '',
+    email: '',
+    password: '',
+    role: 'viewer'
+  });
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
     // Load projects from backend API
@@ -49,10 +58,36 @@ const AdminPanel = () => {
       }
     };
     
+    // Load contacts from backend API
+    const loadContacts = async () => {
+      try {
+        const data = await ApiService.getContacts();
+        setContacts(data);
+      } catch (error) {
+        console.error('Failed to load contacts:', error);
+        setContacts([]);
+      }
+    };
+    
+    // Load users from backend API
+    const loadUsers = async () => {
+      try {
+        const data = await ApiService.getUsers();
+        setUsers(data);
+      } catch (error) {
+        console.error('Failed to load users:', error);
+        setUsers([]);
+      }
+    };
+    
     if (activeTab === 'portfolio') {
       loadProjects();
     } else if (activeTab === 'reviews') {
       loadReviews();
+    } else if (activeTab === 'messages') {
+      loadContacts();
+    } else if (activeTab === 'users') {
+      loadUsers();
     }
     
     // Load categories from localStorage
@@ -74,12 +109,26 @@ const AdminPanel = () => {
     }
   }, [activeTab]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (password === 'gillax2024') {
-      setIsAdmin(true);
-    } else {
-      alert('Invalid password');
+    try {
+      const response = await ApiService.loginUser({ username: password, password });
+      if (response.token) {
+        localStorage.setItem('adminToken', response.token);
+        localStorage.setItem('currentUser', JSON.stringify(response.user));
+        setCurrentUser(response.user);
+        setIsAdmin(true);
+      } else {
+        alert('Invalid credentials');
+      }
+    } catch (error) {
+      // Fallback to old password system
+      if (password === 'gillax2024') {
+        setIsAdmin(true);
+        setCurrentUser({ username: 'admin', role: 'admin' });
+      } else {
+        alert('Invalid credentials');
+      }
     }
   };
 
@@ -275,6 +324,55 @@ const AdminPanel = () => {
     setNewWork({ title: '', description: '', category: '', stats: '', image: null });
   };
 
+  const markContactSeen = async (contactId) => {
+    try {
+      await ApiService.markContactSeen(contactId);
+      const updatedContacts = contacts.map(c => 
+        c._id === contactId ? { ...c, seen: true } : c
+      );
+      setContacts(updatedContacts);
+    } catch (error) {
+      console.error('Failed to mark contact as seen:', error);
+    }
+  };
+
+  const deleteContact = async (contactId) => {
+    try {
+      await ApiService.deleteContact(contactId);
+      const updatedContacts = contacts.filter(c => c._id !== contactId);
+      setContacts(updatedContacts);
+      alert('Contact deleted successfully!');
+    } catch (error) {
+      console.error('Failed to delete contact:', error);
+      alert('Failed to delete contact. Please try again.');
+    }
+  };
+
+  const addUser = async (e) => {
+    e.preventDefault();
+    try {
+      await ApiService.createUser(newUser);
+      setNewUser({ username: '', email: '', password: '', role: 'viewer' });
+      loadUsers();
+      alert('User created successfully!');
+    } catch (error) {
+      console.error('Failed to create user:', error);
+      alert('Failed to create user. Please try again.');
+    }
+  };
+
+  const deleteUser = async (userId) => {
+    try {
+      await ApiService.deleteUser(userId);
+      const updatedUsers = users.filter(u => u._id !== userId);
+      setUsers(updatedUsers);
+      alert('User deleted successfully!');
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      alert('Failed to delete user. Please try again.');
+    }
+  };
+
   if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
@@ -323,6 +421,23 @@ const AdminPanel = () => {
             className={`px-6 py-3 rounded ${activeTab === 'reviews' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
           >
             Reviews
+          </button>
+          <button
+            onClick={() => setActiveTab('messages')}
+            className={`px-6 py-3 rounded relative ${activeTab === 'messages' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
+          >
+            Messages
+            {contacts.filter(c => !c.seen).length > 0 && (
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse">
+                <span className="absolute inset-0 w-3 h-3 bg-red-500 rounded-full animate-ping"></span>
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`px-6 py-3 rounded ${activeTab === 'users' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
+          >
+            Users
           </button>
         </div>
         
@@ -561,10 +676,145 @@ const AdminPanel = () => {
         </div>
         )}
         
+        {activeTab === 'messages' && (
+        <div className="bg-gray-800 p-6 rounded-lg mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-white">Contact Messages</h2>
+            <span className="text-sm text-gray-400">
+              {contacts.filter(c => !c.seen).length} unread messages
+            </span>
+          </div>
+          {contacts.length === 0 ? (
+            <p className="text-gray-400">No messages received yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {contacts.map(contact => (
+                <div key={contact._id} className={`p-4 rounded border-l-4 ${
+                  contact.seen ? 'bg-gray-700 border-gray-500' : 'bg-gray-600 border-blue-500'
+                }`}>
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-white font-semibold">{contact.name}</h3>
+                        {!contact.seen && (
+                          <span className="px-2 py-1 bg-blue-600 text-white text-xs rounded">NEW</span>
+                        )}
+                      </div>
+                      <p className="text-gray-400 text-sm">{contact.email}</p>
+                      {contact.phone && (
+                        <p className="text-gray-400 text-sm">{contact.phone}</p>
+                      )}
+                      <p className="text-gray-300 font-medium mt-2">{contact.subject}</p>
+                      <p className="text-gray-300 text-sm mt-2">{contact.message}</p>
+                      <p className="text-gray-500 text-xs mt-2">
+                        {new Date(contact.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2 ml-4">
+                      {!contact.seen && (
+                        <button
+                          onClick={() => markContactSeen(contact._id)}
+                          className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                        >
+                          Mark Read
+                        </button>
+                      )}
+                      <button
+                        onClick={() => deleteContact(contact._id)}
+                        className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        )}
+        
+        {activeTab === 'users' && (
+        <div className="bg-gray-800 p-6 rounded-lg mb-8">
+          <h2 className="text-xl font-semibold text-white mb-4">Add New User</h2>
+          <form onSubmit={addUser} className="space-y-4">
+            <input
+              type="text"
+              placeholder="Username"
+              value={newUser.username}
+              onChange={(e) => setNewUser({...newUser, username: e.target.value})}
+              className="w-full p-3 bg-gray-700 text-white rounded"
+              required
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              value={newUser.email}
+              onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+              className="w-full p-3 bg-gray-700 text-white rounded"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={newUser.password}
+              onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+              className="w-full p-3 bg-gray-700 text-white rounded"
+              required
+            />
+            <select
+              value={newUser.role}
+              onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+              className="w-full p-3 bg-gray-700 text-white rounded"
+            >
+              <option value="viewer">Viewer</option>
+              <option value="editor">Editor</option>
+              <option value="admin">Admin</option>
+            </select>
+            <button
+              type="submit"
+              className="px-6 py-3 bg-primary text-white rounded hover:bg-secondary"
+            >
+              Add User
+            </button>
+          </form>
+        </div>
+        )}
+        
         <div className="bg-gray-800 p-6 rounded-lg">
           <h2 className="text-xl font-semibold text-white mb-4">
             {activeTab === 'portfolio' ? 'Manage Projects' : activeTab === 'otherwork' ? 'Manage Works' : 'Manage Reviews'}
           </h2>
+          {activeTab === 'users' && (
+            users.length === 0 ? (
+              <p className="text-gray-400">No users created yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {users.map(user => (
+                  <div key={user._id} className="bg-gray-700 p-4 rounded">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <h3 className="text-white font-semibold">{user.username}</h3>
+                        <p className="text-gray-400 text-sm">{user.email}</p>
+                        <span className={`inline-block px-2 py-1 rounded text-xs mt-1 ${
+                          user.role === 'admin' ? 'bg-red-600' : 
+                          user.role === 'editor' ? 'bg-blue-600' : 'bg-gray-600'
+                        } text-white`}>
+                          {user.role.toUpperCase()}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => deleteUser(user._id)}
+                        className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
           {activeTab === 'portfolio' && (
             projects.length === 0 ? (
               <p className="text-gray-400">No projects added yet.</p>

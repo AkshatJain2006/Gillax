@@ -1,20 +1,26 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import ApiService from '../services/api';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    projectType: '',
-    budget: '',
-    deadline: '',
+    phone: '',
+    subject: '',
     message: ''
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    alert('Thanks for reaching out! We\'ll get back to you soon.');
+    try {
+      await ApiService.createContact(formData);
+      alert('Thanks for reaching out! We\'ll get back to you soon.');
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+    } catch (error) {
+      console.error('Failed to submit contact form:', error);
+      alert('Failed to send message. Please try again.');
+    }
   };
 
   const handleChange = (e) => {
@@ -106,47 +112,24 @@ const ContactPage = () => {
             </motion.div>
             
             <motion.div whileHover={{ scale: 1.02 }}>
-              <select
-                name="projectType"
-                value={formData.projectType}
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Your Phone (Optional)"
+                value={formData.phone}
                 onChange={handleChange}
-                className="w-full p-4 bg-black border border-white/20 rounded-lg text-white focus:border-primary focus:outline-none transition-all"
-                required
-              >
-                <option value="">Select Project Type</option>
-                <option value="video-editing">Video Editing</option>
-                <option value="motion-graphics">Motion Graphics</option>
-                <option value="3d-animation">3D Animation</option>
-                <option value="graphic-design">Graphic Design</option>
-                <option value="thumbnail">Thumbnail Design</option>
-                <option value="gaming-education">Gaming/Education Video</option>
-              </select>
-            </motion.div>
-            
-            <motion.div whileHover={{ scale: 1.02 }}>
-              <select
-                name="budget"
-                value={formData.budget}
-                onChange={handleChange}
-                className="w-full p-4 bg-black border border-white/20 rounded-lg text-white focus:border-primary focus:outline-none transition-all"
-                required
-              >
-                <option value="">Select Budget Range</option>
-                <option value="under-500">Under $500</option>
-                <option value="500-1000">$500 - $1000</option>
-                <option value="1000-2500">$1000 - $2500</option>
-                <option value="2500-5000">$2500 - $5000</option>
-                <option value="5000+">$5000+</option>
-              </select>
+                className="w-full p-4 bg-black border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-primary focus:outline-none transition-all"
+              />
             </motion.div>
             
             <motion.div whileHover={{ scale: 1.02 }}>
               <input
-                type="date"
-                name="deadline"
-                value={formData.deadline}
+                type="text"
+                name="subject"
+                placeholder="Subject"
+                value={formData.subject}
                 onChange={handleChange}
-                className="w-full p-4 bg-black border border-white/20 rounded-lg text-white focus:border-primary focus:outline-none transition-all"
+                className="w-full p-4 bg-black border border-white/20 rounded-lg text-white placeholder-gray-400 focus:border-primary focus:outline-none transition-all"
                 required
               />
             </motion.div>

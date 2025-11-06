@@ -22,11 +22,15 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/gillax')
 const Review = require('./models/Review');
 const Project = require('./models/Project');
 const Work = require('./models/Work');
+const Contact = require('./models/Contact');
+const User = require('./models/User');
 
 // Routes
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/projects', require('./routes/projects'));
 app.use('/api/works', require('./routes/works'));
+app.use('/api/contacts', require('./routes/contacts'));
+app.use('/api/users', require('./routes/users'));
 const { router: authRouter } = require('./routes/auth');
 app.use('/api/auth', authRouter);
 

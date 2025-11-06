@@ -63,6 +63,82 @@ class ApiService {
     });
     return response.json();
   }
+
+  // Contacts
+  async getContacts() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/contacts`);
+      if (!response.ok) throw new Error('Failed to fetch contacts');
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('API Error:', error);
+      return [];
+    }
+  }
+
+  async createContact(contactData) {
+    const response = await fetch(`${API_BASE_URL}/contacts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(contactData)
+    });
+    return response.json();
+  }
+
+  async markContactSeen(id) {
+    const response = await fetch(`${API_BASE_URL}/contacts/${id}/seen`, {
+      method: 'PATCH'
+    });
+    return response.json();
+  }
+
+  async deleteContact(id) {
+    const response = await fetch(`${API_BASE_URL}/contacts/${id}`, {
+      method: 'DELETE'
+    });
+    return response.json();
+  }
+
+  // Users
+  async loginUser(credentials) {
+    const response = await fetch(`${API_BASE_URL}/users/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials)
+    });
+    return response.json();
+  }
+
+  async getUsers() {
+    const token = localStorage.getItem('adminToken');
+    const response = await fetch(`${API_BASE_URL}/users`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return response.json();
+  }
+
+  async createUser(userData) {
+    const token = localStorage.getItem('adminToken');
+    const response = await fetch(`${API_BASE_URL}/users/register`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(userData)
+    });
+    return response.json();
+  }
+
+  async deleteUser(id) {
+    const token = localStorage.getItem('adminToken');
+    const response = await fetch(`${API_BASE_URL}/users/${id}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return response.json();
+  }
 }
 
 export default new ApiService();
