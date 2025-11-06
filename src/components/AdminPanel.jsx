@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ApiService from '../services/api';
 
 const AdminPanel = () => {
   const [projects, setProjects] = useState([]);
@@ -25,12 +26,20 @@ const AdminPanel = () => {
   const [editingWork, setEditingWork] = useState(null);
 
   useEffect(() => {
-    // Load reviews from JSON file
-    import('../data/reviews.json').then(data => {
-      setReviews(data.default || data);
-    }).catch(() => {
-      setReviews([]);
-    });
+    // Load reviews from backend API
+    const loadReviews = async () => {
+      try {
+        const data = await ApiService.getAllReviews();
+        setReviews(data);
+      } catch (error) {
+        console.error('Failed to load reviews:', error);
+        setReviews([]);
+      }
+    };
+    
+    if (activeTab === 'reviews') {
+      loadReviews();
+    }
     
     // Load categories from localStorage
     const savedCategories = localStorage.getItem('workCategories');
@@ -103,12 +112,16 @@ const AdminPanel = () => {
     alert('Project deleted successfully!');
   };
 
-  const deleteReview = (reviewId) => {
-    const updatedReviews = reviews.filter(r => r.id !== reviewId);
-    setReviews(updatedReviews);
-    // Note: In production, this would update the JSON file via backend
-    console.log('Review deleted (local state only):', reviewId);
-    alert('Review deleted from display (changes are temporary)');
+  const deleteReview = async (reviewId) => {
+    try {
+      await ApiService.deleteReview(reviewId);
+      const updatedReviews = reviews.filter(r => r._id !== reviewId);
+      setReviews(updatedReviews);
+      alert('Review deleted successfully!');
+    } catch (error) {
+      console.error('Failed to delete review:', error);
+      alert('Failed to delete review. Please try again.');
+    }
   };
 
   const addCategory = (e) => {
@@ -426,7 +439,7 @@ const AdminPanel = () => {
                       </div>
                     </div>
                     <button
-                      onClick={() => deleteReview(review.id)}
+                      onClick={() => deleteReview(review._id)}
                       className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
                     >
                       Delete

@@ -1,25 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import ApiService from '../services/api';
 
 const ClientReviews = () => {
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
-    // Load reviews from JSON file or set defaults
     const loadReviews = async () => {
       try {
-        const response = await fetch('/reviews.json');
-        if (response.ok) {
-          const data = await response.json();
-          setReviews(data);
-        } else {
-          throw new Error('Failed to load reviews');
-        }
+        const data = await ApiService.getReviews();
+        setReviews(data);
       } catch (error) {
+        console.error('Failed to load reviews:', error);
         // Fallback to default reviews
         const defaultReviews = [
           {
-            id: 1,
+            _id: 1,
             name: "Alex Johnson",
             role: "Gaming Content Creator",
             review: "GillaX completely transformed my channel. Their editing style is exactly what modern gaming content needs - fast, smooth, and engaging.",
@@ -28,7 +24,7 @@ const ClientReviews = () => {
             avatar: "AJ"
           },
           {
-            id: 2,
+            _id: 2,
             name: "Sarah Chen", 
             role: "Educational YouTuber",
             review: "The way they handle educational content is amazing. Complex topics become visually appealing and easy to understand.",
@@ -37,7 +33,7 @@ const ClientReviews = () => {
             avatar: "SC"
           },
           {
-            id: 3,
+            _id: 3,
             name: "Mike Rodriguez",
             role: "Tech Reviewer", 
             review: "Professional quality that rivals big tech channels. My reviews now have that premium look that keeps viewers engaged.",
@@ -62,7 +58,7 @@ const ClientReviews = () => {
     platform: ''
   });
 
-  const handleSubmitReview = (e) => {
+  const handleSubmitReview = async (e) => {
     e.preventDefault();
     if (newReview.name && newReview.review) {
       const avatar = newReview.name.split(' ').map(n => n[0]).join('').toUpperCase();
@@ -72,12 +68,14 @@ const ClientReviews = () => {
         id: Date.now(),
         date: new Date().toISOString()
       };
-      const updatedReviews = [...reviews, reviewWithId];
-      setReviews(updatedReviews);
-      
-      // Note: In production, this would save to backend/database
-      // For now, reviews are stored in component state only
-      console.log('New review added:', reviewWithId);
+      try {
+        const savedReview = await ApiService.createReview(newReview);
+        setReviews([...reviews, savedReview]);
+        alert('Review submitted! It will appear after admin approval.');
+      } catch (error) {
+        console.error('Failed to submit review:', error);
+        alert('Failed to submit review. Please try again.');
+      }
       
       setNewReview({ name: '', role: '', review: '', rating: 5, platform: '' });
       setShowForm(false);
