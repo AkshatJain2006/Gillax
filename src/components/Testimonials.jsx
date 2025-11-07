@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 
 const Testimonials = () => {
+  const [showAll, setShowAll] = useState(false);
+  
   const testimonials = [
     {
       name: "Alex Johnson",
@@ -94,18 +96,18 @@ const Testimonials = () => {
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
         >
-          What Our Clients Say
+          Our Happy Clients
         </motion.h2>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {testimonials.map((testimonial, index) => (
+          {(showAll ? testimonials : testimonials.slice(0, 6)).map((testimonial, index) => (
             <motion.div
               key={index}
               className="premium-card rounded-2xl p-6 relative"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.2 }}
-              whileHover={{ scale: 1.03, y: -5 }}
+              transition={{ delay: index * 0.05, duration: 0.3 }}
+              whileHover={{ scale: 1.02, y: -3 }}
             >
               {/* Quote Icon */}
               <div className="text-primary text-4xl mb-4 gold-accent bg-clip-text text-transparent">"</div>
@@ -142,12 +144,42 @@ const Testimonials = () => {
           ))}
         </div>
 
+        {/* View More Button */}
+        {!showAll && testimonials.length > 6 && (
+          <motion.div
+            className="text-center mt-8"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+          >
+            <button
+              onClick={() => setShowAll(true)}
+              className="px-6 py-3 bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
+            >
+              View More Reviews ({testimonials.length - 6} more)
+            </button>
+          </motion.div>
+        )}
+        
+        {showAll && (
+          <motion.div
+            className="text-center mt-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <button
+              onClick={() => setShowAll(false)}
+              className="px-6 py-3 bg-gray-500/20 border border-gray-500/30 text-gray-400 rounded-lg hover:bg-gray-500/30 transition-colors"
+            >
+              Show Less
+            </button>
+          </motion.div>
+        )}
+
         {/* Trust Badge */}
         <motion.div
-          className="text-center mt-12"
+          className="text-center mt-8"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
         >
           <div className="inline-flex items-center space-x-2 text-gray-400">
             <span className="text-green-500">✓</span>

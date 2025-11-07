@@ -19,6 +19,11 @@ import AdminPanel from './components/AdminPanel';
 
 const MainApp = () => {
   const [currentPage, setCurrentPage] = useState('home');
+  
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentPage]);
   const [showAdmin, setShowAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const location = useLocation();

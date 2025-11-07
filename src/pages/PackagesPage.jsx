@@ -76,13 +76,13 @@ const PackagesPage = () => {
             <motion.div
               key={index}
               className="bg-black border border-white/20 rounded-2xl p-8 relative overflow-hidden group"
-              initial={{ opacity: 0, y: 50 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.2 }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
               whileHover={{ 
-                scale: 1.05,
+                scale: 1.02,
                 borderColor: "rgba(108, 99, 255, 0.4)",
-                boxShadow: "0 20px 40px rgba(108, 99, 255, 0.2)"
+                boxShadow: "0 10px 30px rgba(108, 99, 255, 0.15)"
               }}
             >
               <motion.div 
@@ -106,16 +106,13 @@ const PackagesPage = () => {
 
                 <ul className="space-y-3 mb-6">
                   {pkg.features.map((feature, i) => (
-                    <motion.li 
+                    <li 
                       key={i}
                       className="text-gray-300 flex items-start"
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.1 * i }}
                     >
                       <span className="text-primary mr-2">•</span>
                       {feature}
-                    </motion.li>
+                    </li>
                   ))}
                 </ul>
 
@@ -137,9 +134,9 @@ const PackagesPage = () => {
 
         <motion.div 
           className="mt-16 text-center bg-black border border-white/20 rounded-2xl p-8"
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
+          transition={{ delay: 0.4 }}
         >
           <h3 className="text-2xl font-semibold text-white mb-6 premium-font">Why Choose GillaX?</h3>
           <div className="grid md:grid-cols-2 gap-6 text-gray-300">

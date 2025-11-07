@@ -81,16 +81,16 @@ export default function HomePage() {
       {/* Content */}
       <motion.div
         className="relative z-10 text-center px-4 max-w-4xl mx-auto"
-        initial={{ opacity: 0, y: 50 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.2 }}
+        transition={{ duration: 0.8 }}
       >
         {/* Creative Studio Tag */}
         <motion.span
           className="inline-block mb-6 px-4 py-1 rounded-full border border-blue-500/15 bg-blue-950/40 backdrop-blur-md text-sm text-blue-200 uppercase tracking-widest"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
         >
           Creative Studio
         </motion.span>
@@ -122,7 +122,7 @@ export default function HomePage() {
           className="mt-4 text-lg md:text-2xl text-gray-300"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
         >
           We make visuals move
         </motion.p>
@@ -132,7 +132,7 @@ export default function HomePage() {
           className="mt-10 flex flex-wrap justify-center gap-5"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
         >
           {["Video Editing", "Motion Graphics", "3D Animation", "Design"].map(
             (btn, index) => (
