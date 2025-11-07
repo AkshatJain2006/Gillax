@@ -36,7 +36,6 @@ const AdminPanel = ({ onLogout }) => {
   const [newPackage, setNewPackage] = useState({
     title: '',
     subtitle: '',
-    price: '',
     duration: '',
     features: [''],
     description: '',
@@ -106,7 +105,6 @@ const AdminPanel = ({ onLogout }) => {
           {
             id: 1,
             title: "Reels & Shorts",
-            price: "₹1,200",
             duration: "Up to 60 seconds",
             features: [
               "Snappy cuts + on-beat pacing",
@@ -121,7 +119,6 @@ const AdminPanel = ({ onLogout }) => {
             id: 2,
             title: "Long Format",
             subtitle: "(YouTube / Interviews / Podcasts)",
-            price: "₹3,500",
             duration: "Up to 10–15 minutes",
             features: [
               "Multi-cam sync & clean transitions",
@@ -135,7 +132,6 @@ const AdminPanel = ({ onLogout }) => {
           {
             id: 3,
             title: "Motion Graphics / Explainers",
-            price: "₹2,000",
             features: [
               "Logo animations / lower thirds / infographics",
               "Text animations & visual effects",
@@ -353,7 +349,7 @@ const AdminPanel = ({ onLogout }) => {
     const updatedPackages = [...packages, pkg];
     setPackages(updatedPackages);
     localStorage.setItem('packages', JSON.stringify(updatedPackages));
-    setNewPackage({ title: '', subtitle: '', price: '', duration: '', features: [''], description: '', mostPopular: false });
+    setNewPackage({ title: '', subtitle: '', duration: '', features: [''], description: '', mostPopular: false });
     alert('Package added successfully!');
   };
 
@@ -362,7 +358,6 @@ const AdminPanel = ({ onLogout }) => {
     setNewPackage({
       title: pkg.title,
       subtitle: pkg.subtitle || '',
-      price: pkg.price,
       duration: pkg.duration || '',
       features: [...pkg.features],
       description: pkg.description,
@@ -381,7 +376,7 @@ const AdminPanel = ({ onLogout }) => {
     setPackages(updatedPackages);
     localStorage.setItem('packages', JSON.stringify(updatedPackages));
     setEditingPackage(null);
-    setNewPackage({ title: '', subtitle: '', price: '', duration: '', features: [''], description: '', mostPopular: false });
+    setNewPackage({ title: '', subtitle: '', duration: '', features: [''], description: '', mostPopular: false });
     alert('Package updated successfully!');
   };
 
@@ -946,14 +941,7 @@ const AdminPanel = ({ onLogout }) => {
               onChange={(e) => setNewPackage({...newPackage, subtitle: e.target.value})}
               className="w-full p-3 bg-gray-700 text-white rounded"
             />
-            <input
-              type="text"
-              placeholder="Price (e.g., ₹1,200)"
-              value={newPackage.price}
-              onChange={(e) => setNewPackage({...newPackage, price: e.target.value})}
-              className="w-full p-3 bg-gray-700 text-white rounded"
-              required
-            />
+
             <input
               type="text"
               placeholder="Duration (optional)"
@@ -1025,7 +1013,7 @@ const AdminPanel = ({ onLogout }) => {
                   type="button"
                   onClick={() => {
                     setEditingPackage(null);
-                    setNewPackage({ title: '', subtitle: '', price: '', duration: '', features: [''], description: '', mostPopular: false });
+                    setNewPackage({ title: '', subtitle: '', duration: '', features: [''], description: '', mostPopular: false });
                   }}
                   className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700"
                 >
@@ -1158,7 +1146,6 @@ const AdminPanel = ({ onLogout }) => {
                         {pkg.subtitle && (
                           <p className="text-gray-400 text-sm">{pkg.subtitle}</p>
                         )}
-                        <p className="text-blue-400 font-medium">{pkg.price}</p>
                         {pkg.duration && (
                           <p className="text-gray-400 text-sm">{pkg.duration}</p>
                         )}

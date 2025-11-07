@@ -1,10 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import ApiService from '../services/api';
 
 const Testimonials = () => {
   const [showAll, setShowAll] = useState(false);
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
   
-  const testimonials = [
+  useEffect(() => {
+    const loadReviews = async () => {
+      try {
+        const data = await ApiService.getAllReviews();
+        const approvedReviews = data.filter(review => review.approved);
+        setTestimonials(approvedReviews.map(review => ({
+          name: review.name,
+          role: review.role,
+          content: review.review,
+          rating: review.rating,
+          avatar: review.name.split(' ').map(n => n[0]).join(''),
+          platform: review.platform,
+          comment: review.review
+        })));
+      } catch (error) {
+        console.error('Failed to load reviews:', error);
+        setTestimonials([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadReviews();
+  }, []);
+  
+  const fallbackTestimonials = [
     {
       name: "Alex Johnson",
       role: "Gaming Content Creator",
@@ -87,6 +115,8 @@ const Testimonials = () => {
       comment: "Music videos that match the vibe perfectly."
     }
   ];
+  
+  const displayTestimonials = testimonials.length > 0 ? testimonials : fallbackTestimonials;
 
   return (
     <div className="py-20 bg-black">
@@ -99,8 +129,11 @@ const Testimonials = () => {
           Our Happy Clients
         </motion.h2>
 
+        {loading ? (
+          <div className="text-center text-white">Loading reviews...</div>
+        ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {(showAll ? testimonials : testimonials.slice(0, 6)).map((testimonial, index) => (
+          {(showAll ? displayTestimonials : displayTestimonials.slice(0, 6)).map((testimonial, index) => (
             <motion.div
               key={index}
               className="premium-card rounded-2xl p-6 relative"
@@ -144,8 +177,10 @@ const Testimonials = () => {
           ))}
         </div>
 
+        )}
+        
         {/* View More Button */}
-        {!showAll && testimonials.length > 6 && (
+        {!showAll && displayTestimonials.length > 6 && (
           <motion.div
             className="text-center mt-8"
             initial={{ opacity: 0 }}
@@ -155,7 +190,7 @@ const Testimonials = () => {
               onClick={() => setShowAll(true)}
               className="px-6 py-3 bg-blue-500/20 border border-blue-500/30 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors"
             >
-              View More Reviews ({testimonials.length - 6} more)
+              View More Reviews ({displayTestimonials.length - 6} more)
             </button>
           </motion.div>
         )}

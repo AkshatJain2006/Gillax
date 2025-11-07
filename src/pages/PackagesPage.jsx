@@ -38,7 +38,6 @@ const PackagesPage = () => {
         {
           id: 1,
           title: "Reels & Shorts",
-          price: "₹1,200",
           duration: "Up to 60 seconds",
           features: [
             "Snappy cuts + on-beat pacing",
@@ -53,7 +52,6 @@ const PackagesPage = () => {
           id: 2,
           title: "Long Format",
           subtitle: "(YouTube / Interviews / Podcasts)",
-          price: "₹3,500",
           duration: "Up to 10–15 minutes",
           features: [
             "Multi-cam sync & clean transitions",
@@ -67,7 +65,6 @@ const PackagesPage = () => {
         {
           id: 3,
           title: "Motion Graphics / Explainers", 
-          price: "₹2,000",
           features: [
             "Logo animations / lower thirds / infographics",
             "Text animations & visual effects",
@@ -157,17 +154,11 @@ const PackagesPage = () => {
                   <p className="text-sm text-gray-400 mb-4">{pkg.subtitle}</p>
                 )}
                 
-                <div className="mb-6">
-                  <span className={`font-light italic text-primary ${
-                    isMiddle ? 'text-4xl' : 'text-3xl'
-                  }`}>Starting from</span>
-                  <div className={`font-light italic text-white mt-2 ${
-                    isMiddle ? 'text-5xl' : 'text-4xl'
-                  }`}>{pkg.price}</div>
-                  {pkg.duration && (
-                    <p className="text-gray-400 mt-2">{pkg.duration}</p>
-                  )}
-                </div>
+                {pkg.duration && (
+                  <div className="mb-6">
+                    <p className="text-gray-400">{pkg.duration}</p>
+                  </div>
+                )}
 
                 <ul className="space-y-3 mb-6 flex-1">
                   {pkg.features.map((feature, i) => (
@@ -194,7 +185,7 @@ const PackagesPage = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  {isMiddle ? 'Most Popular - Get Quote' : 'Get a Quote'}
+                  {isMiddle ? 'Most Popular - Contact Us' : 'Contact Us'}
                 </motion.button>
               </div>
               {isMiddle && (
