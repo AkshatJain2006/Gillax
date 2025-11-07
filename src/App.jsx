@@ -9,7 +9,7 @@ import ContactPage from './pages/ContactPage';
 import OtherWorkPage from './pages/OtherWorkPage';
 import Portfolio from './components/Portfolio';
 import TrustIndicators from './components/TrustIndicators';
-import Testimonials from './components/Testimonials';
+
 import OtherWork from './components/OtherWork';
 import ClientReviews from './components/ClientReviews';
 import PremiumEffects from './components/PremiumEffects';
@@ -134,7 +134,6 @@ const MainApp = () => {
                 <>
                   <HomePage />
                   <TrustIndicators />
-                  <Testimonials />
                 </>
               )}
               {currentPage === 'services' && <ServicesPage />}
