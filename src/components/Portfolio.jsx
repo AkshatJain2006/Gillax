@@ -11,6 +11,7 @@ const Portfolio = () => {
     const loadProjects = async () => {
       try {
         const data = await ApiService.getProjects();
+        console.log('Loaded projects:', data);
         setProjects(data);
       } catch (error) {
         console.error('Failed to load projects:', error);
@@ -79,6 +80,8 @@ const Portfolio = () => {
         
         {loading ? (
           <div className="text-center text-white">Loading projects...</div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="text-center text-white">No projects found. Add some videos in the admin panel!</div>
         ) : (
           <AnimatePresence mode="wait">
             <motion.div 
@@ -101,14 +104,23 @@ const Portfolio = () => {
                   y: -5
                 }}
               >
-                <div className="aspect-video relative overflow-hidden">
-                  <iframe
-                    src={project.youtubeLink}
-                    title={project.title}
-                    className="w-full h-full transition-transform group-hover:scale-105"
-                    allowFullScreen
-                  ></iframe>
+                <div className="aspect-video relative overflow-hidden bg-gray-800 cursor-pointer" onClick={() => window.open(project.youtubeLink.includes('watch') ? project.youtubeLink : `https://www.youtube.com/watch?v=${project.youtubeLink.split('/').pop()}`, '_blank')}>
+                  <img
+                    src={`https://img.youtube.com/vi/${project.youtubeLink.split('v=')[1]?.split('&')[0] || project.youtubeLink.split('/').pop()}/maxresdefault.jpg`}
+                    alt={project.title}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    onError={(e) => {
+                      e.target.src = `https://img.youtube.com/vi/${project.youtubeLink.split('v=')[1]?.split('&')[0] || project.youtubeLink.split('/').pop()}/hqdefault.jpg`;
+                    }}
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                      <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </div>
+                  </div>
                 </div>
                 <div className="p-6 text-center">
                   <h3 className="text-xl font-light italic text-white group-hover:text-primary transition-colors">{project.title}</h3>
