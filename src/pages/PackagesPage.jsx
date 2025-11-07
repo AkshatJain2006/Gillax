@@ -1,48 +1,87 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
 const PackagesPage = () => {
-  const packages = [
-    {
-      title: "Reels & Shorts",
-      price: "₹1,200",
-      duration: "Up to 60 seconds",
-      features: [
-        "Snappy cuts + on-beat pacing",
-        "Dynamic captions & trendy effects", 
-        "Basic color grade + sound polish",
-        "2 revision rounds",
-        "Default Raw file export"
-      ],
-      description: "Perfect for creators who want scroll-stopping short-form edits."
-    },
-    {
-      title: "Long Format",
-      subtitle: "(YouTube / Interviews / Podcasts)",
-      price: "₹3,500",
-      duration: "Up to 10–15 minutes",
-      features: [
-        "Multi-cam sync & clean transitions",
-        "Color correction & light grading", 
-        "Audio cleanup + background music",
-        "2–3 revisions",
-        "Thumbnail included (optional)"
-      ],
-      description: "For creators who want polished storytelling that holds attention."
-    },
-    {
-      title: "Motion Graphics / Explainers", 
-      price: "₹2,000",
-      features: [
-        "Logo animations / lower thirds / infographics",
-        "Text animations & visual effects",
-        "Sound design + music sync", 
-        "2–3 revisions",
-        "4K export quality"
-      ],
-      description: "Ideal for brands and creators who want their visuals to pop."
+  const [packages, setPackages] = useState([]);
+  const [centerPackageIndex, setCenterPackageIndex] = useState(0);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const containerRef = useRef(null);
+  const scrollRef = useRef(null);
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (packages.length > 0) {
+        setCenterPackageIndex(prev => (prev + 1) % packages.length);
+      }
+    }, 3000);
+    
+    return () => clearInterval(interval);
+  }, [packages.length]);
+
+  const handleScroll = (e) => {
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      e.preventDefault();
+      const delta = e.deltaX;
+      const newPosition = Math.max(0, Math.min(scrollPosition + delta, (packages.length - 1) * 450));
+      setScrollPosition(newPosition);
+      setCenterPackageIndex(Math.round(newPosition / 450));
     }
-  ];
+  };
+  
+  useEffect(() => {
+    const savedPackages = localStorage.getItem('packages');
+    if (savedPackages) {
+      setPackages(JSON.parse(savedPackages));
+    } else {
+      // Default packages if none exist
+      const defaultPackages = [
+        {
+          id: 1,
+          title: "Reels & Shorts",
+          price: "₹1,200",
+          duration: "Up to 60 seconds",
+          features: [
+            "Snappy cuts + on-beat pacing",
+            "Dynamic captions & trendy effects", 
+            "Basic color grade + sound polish",
+            "2 revision rounds",
+            "Default Raw file export"
+          ],
+          description: "Perfect for creators who want scroll-stopping short-form edits."
+        },
+        {
+          id: 2,
+          title: "Long Format",
+          subtitle: "(YouTube / Interviews / Podcasts)",
+          price: "₹3,500",
+          duration: "Up to 10–15 minutes",
+          features: [
+            "Multi-cam sync & clean transitions",
+            "Color correction & light grading", 
+            "Audio cleanup + background music",
+            "2–3 revisions",
+            "Thumbnail included (optional)"
+          ],
+          description: "For creators who want polished storytelling that holds attention."
+        },
+        {
+          id: 3,
+          title: "Motion Graphics / Explainers", 
+          price: "₹2,000",
+          features: [
+            "Logo animations / lower thirds / infographics",
+            "Text animations & visual effects",
+            "Sound design + music sync", 
+            "2–3 revisions",
+            "4K export quality"
+          ],
+          description: "Ideal for brands and creators who want their visuals to pop."
+        }
+      ];
+      setPackages(defaultPackages);
+      localStorage.setItem('packages', JSON.stringify(defaultPackages));
+    }
+  }, []);
 
   return (
     <div className="py-20 px-8 bg-black min-h-screen">
@@ -71,44 +110,72 @@ const PackagesPage = () => {
           Professional video editing with 4+ years of experience
         </motion.p>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {packages.map((pkg, index) => (
-            <motion.div
-              key={index}
-              className="bg-black border border-white/20 rounded-2xl p-8 relative overflow-hidden group"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
-              whileHover={{ 
-                scale: 1.02,
-                borderColor: "rgba(108, 99, 255, 0.4)",
-                boxShadow: "0 10px 30px rgba(108, 99, 255, 0.15)"
-              }}
-            >
+        <div 
+          ref={containerRef} 
+          className="relative h-[700px] overflow-x-auto overflow-y-hidden"
+          onWheel={handleScroll}
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#3b82f6 #1f2937'
+          }}
+        >
+          <motion.div 
+            className="flex gap-8 h-full items-center transition-transform duration-500"
+            style={{ transform: `translateX(-${scrollPosition}px)`, minWidth: `${packages.length * 450}px` }}
+          >
+            {packages.map((pkg, index) => {
+              const isMiddle = pkg.mostPopular || index === centerPackageIndex;
+              return (
+                <motion.div
+                  key={pkg.id || index}
+                  className={`bg-black border rounded-2xl p-8 relative overflow-hidden group flex-shrink-0 ${
+                    isMiddle 
+                      ? 'w-[450px] h-[600px] border-blue-500/50 shadow-2xl shadow-blue-500/20 scale-105' 
+                      : 'w-[400px] h-[550px] border-white/20'
+                  }`}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  whileHover={{ 
+                    scale: isMiddle ? 1.15 : 1.05,
+                    borderColor: "rgba(108, 99, 255, 0.4)",
+                    boxShadow: "0 20px 40px rgba(108, 99, 255, 0.25)"
+                  }}
+                >
               <motion.div 
-                className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 opacity-0 group-hover:opacity-100"
+                className={`absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10 ${
+                  isMiddle ? 'opacity-30' : 'opacity-0'
+                } group-hover:opacity-100`}
                 transition={{ duration: 0.3 }}
               />
               
-              <div className="relative z-10">
-                <h3 className="text-2xl font-light italic text-white mb-2">{pkg.title}</h3>
+              <div className="relative z-10 h-full flex flex-col">
+                <h3 className={`font-light italic text-white mb-2 ${
+                  isMiddle ? 'text-3xl' : 'text-2xl'
+                }`}>{pkg.title}</h3>
                 {pkg.subtitle && (
                   <p className="text-sm text-gray-400 mb-4">{pkg.subtitle}</p>
                 )}
                 
                 <div className="mb-6">
-                  <span className="text-3xl font-light italic text-primary">Starting from</span>
-                  <div className="text-4xl font-light italic text-white mt-2">{pkg.price}</div>
+                  <span className={`font-light italic text-primary ${
+                    isMiddle ? 'text-4xl' : 'text-3xl'
+                  }`}>Starting from</span>
+                  <div className={`font-light italic text-white mt-2 ${
+                    isMiddle ? 'text-5xl' : 'text-4xl'
+                  }`}>{pkg.price}</div>
                   {pkg.duration && (
                     <p className="text-gray-400 mt-2">{pkg.duration}</p>
                   )}
                 </div>
 
-                <ul className="space-y-3 mb-6">
+                <ul className="space-y-3 mb-6 flex-1">
                   {pkg.features.map((feature, i) => (
                     <li 
                       key={i}
-                      className="text-gray-300 flex items-start"
+                      className={`text-gray-300 flex items-start ${
+                        isMiddle ? 'text-base' : 'text-sm'
+                      }`}
                     >
                       <span className="text-primary mr-2">•</span>
                       {feature}
@@ -121,15 +188,26 @@ const PackagesPage = () => {
                 </p>
 
                 <motion.button 
-                  className="w-full py-3 bg-gradient-to-r from-primary to-secondary rounded-lg text-white font-light italic"
+                  className={`w-full bg-gradient-to-r from-primary to-secondary rounded-lg text-white font-light italic ${
+                    isMiddle ? 'py-4 text-lg' : 'py-3'
+                  }`}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  Get a Quote
+                  {isMiddle ? 'Most Popular - Get Quote' : 'Get a Quote'}
                 </motion.button>
               </div>
+              {isMiddle && (
+                <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 z-20">
+                  <span className="bg-gradient-to-r from-primary to-secondary text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg">
+                    Most Popular
+                  </span>
+                </div>
+              )}
             </motion.div>
-          ))}
+          );
+          })}
+          </motion.div>
         </div>
 
         <motion.div 

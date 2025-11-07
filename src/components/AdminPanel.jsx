@@ -32,6 +32,17 @@ const AdminPanel = ({ onLogout }) => {
     role: 'viewer'
   });
   const [currentUser, setCurrentUser] = useState(null);
+  const [packages, setPackages] = useState([]);
+  const [newPackage, setNewPackage] = useState({
+    title: '',
+    subtitle: '',
+    price: '',
+    duration: '',
+    features: [''],
+    description: '',
+    mostPopular: false
+  });
+  const [editingPackage, setEditingPackage] = useState(null);
 
   useEffect(() => {
     // Load projects from backend API
@@ -86,6 +97,58 @@ const AdminPanel = ({ onLogout }) => {
       loadContacts();
     } else if (activeTab === 'users') {
       loadUsers();
+    } else if (activeTab === 'packages') {
+      const savedPackages = localStorage.getItem('packages');
+      if (savedPackages) {
+        setPackages(JSON.parse(savedPackages));
+      } else {
+        const defaultPackages = [
+          {
+            id: 1,
+            title: "Reels & Shorts",
+            price: "₹1,200",
+            duration: "Up to 60 seconds",
+            features: [
+              "Snappy cuts + on-beat pacing",
+              "Dynamic captions & trendy effects",
+              "Basic color grade + sound polish",
+              "2 revision rounds",
+              "Default Raw file export"
+            ],
+            description: "Perfect for creators who want scroll-stopping short-form edits."
+          },
+          {
+            id: 2,
+            title: "Long Format",
+            subtitle: "(YouTube / Interviews / Podcasts)",
+            price: "₹3,500",
+            duration: "Up to 10–15 minutes",
+            features: [
+              "Multi-cam sync & clean transitions",
+              "Color correction & light grading",
+              "Audio cleanup + background music",
+              "2–3 revisions",
+              "Thumbnail included (optional)"
+            ],
+            description: "For creators who want polished storytelling that holds attention."
+          },
+          {
+            id: 3,
+            title: "Motion Graphics / Explainers",
+            price: "₹2,000",
+            features: [
+              "Logo animations / lower thirds / infographics",
+              "Text animations & visual effects",
+              "Sound design + music sync",
+              "2–3 revisions",
+              "4K export quality"
+            ],
+            description: "Ideal for brands and creators who want their visuals to pop."
+          }
+        ];
+        setPackages(defaultPackages);
+        localStorage.setItem('packages', JSON.stringify(defaultPackages));
+      }
     }
     
     // Load categories from localStorage
@@ -280,6 +343,70 @@ const AdminPanel = ({ onLogout }) => {
     alert('Category deleted successfully!');
   };
 
+  const addPackage = (e) => {
+    e.preventDefault();
+    const pkg = {
+      id: Date.now(),
+      ...newPackage,
+      features: newPackage.features.filter(f => f.trim() !== '')
+    };
+    const updatedPackages = [...packages, pkg];
+    setPackages(updatedPackages);
+    localStorage.setItem('packages', JSON.stringify(updatedPackages));
+    setNewPackage({ title: '', subtitle: '', price: '', duration: '', features: [''], description: '', mostPopular: false });
+    alert('Package added successfully!');
+  };
+
+  const editPackage = (pkg) => {
+    setEditingPackage(pkg);
+    setNewPackage({
+      title: pkg.title,
+      subtitle: pkg.subtitle || '',
+      price: pkg.price,
+      duration: pkg.duration || '',
+      features: [...pkg.features],
+      description: pkg.description,
+      mostPopular: pkg.mostPopular || false
+    });
+  };
+
+  const updatePackage = (e) => {
+    e.preventDefault();
+    const updatedPkg = {
+      ...editingPackage,
+      ...newPackage,
+      features: newPackage.features.filter(f => f.trim() !== '')
+    };
+    const updatedPackages = packages.map(p => p.id === editingPackage.id ? updatedPkg : p);
+    setPackages(updatedPackages);
+    localStorage.setItem('packages', JSON.stringify(updatedPackages));
+    setEditingPackage(null);
+    setNewPackage({ title: '', subtitle: '', price: '', duration: '', features: [''], description: '', mostPopular: false });
+    alert('Package updated successfully!');
+  };
+
+  const deletePackage = (id) => {
+    const updatedPackages = packages.filter(p => p.id !== id);
+    setPackages(updatedPackages);
+    localStorage.setItem('packages', JSON.stringify(updatedPackages));
+    alert('Package deleted successfully!');
+  };
+
+  const addFeature = () => {
+    setNewPackage({ ...newPackage, features: [...newPackage.features, ''] });
+  };
+
+  const updateFeature = (index, value) => {
+    const updatedFeatures = [...newPackage.features];
+    updatedFeatures[index] = value;
+    setNewPackage({ ...newPackage, features: updatedFeatures });
+  };
+
+  const removeFeature = (index) => {
+    const updatedFeatures = newPackage.features.filter((_, i) => i !== index);
+    setNewPackage({ ...newPackage, features: updatedFeatures });
+  };
+
   const downloadReviewsJSON = () => {
     const dataStr = JSON.stringify(reviews, null, 2);
     const dataBlob = new Blob([dataStr], {type: 'application/json'});
@@ -441,6 +568,12 @@ const AdminPanel = ({ onLogout }) => {
                 <span className="absolute inset-0 w-3 h-3 bg-red-500 rounded-full animate-ping"></span>
               </span>
             )}
+          </button>
+          <button
+            onClick={() => setActiveTab('packages')}
+            className={`px-6 py-3 rounded ${activeTab === 'packages' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
+          >
+            Packages
           </button>
           {currentUser?.role === 'admin' && (
             <button
@@ -792,9 +925,123 @@ const AdminPanel = ({ onLogout }) => {
         </div>
         )}
         
+        {activeTab === 'packages' && (
+        <div className="bg-gray-800 p-6 rounded-lg mb-8">
+          <h2 className="text-xl font-semibold text-white mb-4">
+            {editingPackage ? 'Edit Package' : 'Add New Package'}
+          </h2>
+          <form onSubmit={editingPackage ? updatePackage : addPackage} className="space-y-4">
+            <input
+              type="text"
+              placeholder="Package Title"
+              value={newPackage.title}
+              onChange={(e) => setNewPackage({...newPackage, title: e.target.value})}
+              className="w-full p-3 bg-gray-700 text-white rounded"
+              required
+            />
+            <input
+              type="text"
+              placeholder="Subtitle (optional)"
+              value={newPackage.subtitle}
+              onChange={(e) => setNewPackage({...newPackage, subtitle: e.target.value})}
+              className="w-full p-3 bg-gray-700 text-white rounded"
+            />
+            <input
+              type="text"
+              placeholder="Price (e.g., ₹1,200)"
+              value={newPackage.price}
+              onChange={(e) => setNewPackage({...newPackage, price: e.target.value})}
+              className="w-full p-3 bg-gray-700 text-white rounded"
+              required
+            />
+            <input
+              type="text"
+              placeholder="Duration (optional)"
+              value={newPackage.duration}
+              onChange={(e) => setNewPackage({...newPackage, duration: e.target.value})}
+              className="w-full p-3 bg-gray-700 text-white rounded"
+            />
+            
+            <div>
+              <label className="block text-white mb-2">Features</label>
+              {newPackage.features.map((feature, index) => (
+                <div key={index} className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    placeholder="Feature description"
+                    value={feature}
+                    onChange={(e) => updateFeature(index, e.target.value)}
+                    className="flex-1 p-2 bg-gray-700 text-white rounded text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeFeature(index)}
+                    className="px-3 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addFeature}
+                className="px-3 py-2 bg-green-600 text-white rounded text-sm hover:bg-green-700"
+              >
+                Add Feature
+              </button>
+            </div>
+            
+            <textarea
+              placeholder="Package Description"
+              value={newPackage.description}
+              onChange={(e) => setNewPackage({...newPackage, description: e.target.value})}
+              className="w-full p-3 bg-gray-700 text-white rounded"
+              rows="3"
+              required
+            />
+            
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="mostPopular"
+                checked={newPackage.mostPopular}
+                onChange={(e) => setNewPackage({...newPackage, mostPopular: e.target.checked})}
+                className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+              />
+              <label htmlFor="mostPopular" className="text-white text-sm">
+                Mark as Most Popular
+              </label>
+            </div>
+            
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="px-6 py-3 bg-primary text-white rounded hover:bg-secondary"
+              >
+                {editingPackage ? 'Update Package' : 'Add Package'}
+              </button>
+              {editingPackage && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingPackage(null);
+                    setNewPackage({ title: '', subtitle: '', price: '', duration: '', features: [''], description: '', mostPopular: false });
+                  }}
+                  className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
+        )}
+        
         <div className="bg-gray-800 p-6 rounded-lg">
           <h2 className="text-xl font-semibold text-white mb-4">
-            {activeTab === 'portfolio' ? 'Manage Projects' : activeTab === 'otherwork' ? 'Manage Works' : 'Manage Reviews'}
+            {activeTab === 'portfolio' ? 'Manage Projects' : 
+             activeTab === 'otherwork' ? 'Manage Works' : 
+             activeTab === 'packages' ? 'Manage Packages' : 'Manage Reviews'}
           </h2>
           {activeTab === 'users' && currentUser?.role === 'admin' && (
             users.length === 0 ? (
@@ -893,6 +1140,53 @@ const AdminPanel = ({ onLogout }) => {
                     {work.image && (
                       <img src={work.image} alt={work.title} className="w-20 h-12 object-cover rounded mt-2" />
                     )}
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+          {activeTab === 'packages' && (
+            packages.length === 0 ? (
+              <p className="text-gray-400">No packages added yet.</p>
+            ) : (
+              <div className="space-y-4">
+                {packages.map(pkg => (
+                  <div key={pkg.id} className="bg-gray-700 p-4 rounded">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <h3 className="text-white font-semibold">{pkg.title}</h3>
+                        {pkg.subtitle && (
+                          <p className="text-gray-400 text-sm">{pkg.subtitle}</p>
+                        )}
+                        <p className="text-blue-400 font-medium">{pkg.price}</p>
+                        {pkg.duration && (
+                          <p className="text-gray-400 text-sm">{pkg.duration}</p>
+                        )}
+                        <p className="text-gray-300 text-sm mt-1">{pkg.description}</p>
+                        <div className="mt-2">
+                          <p className="text-gray-400 text-xs mb-1">Features:</p>
+                          <ul className="text-gray-300 text-xs space-y-1">
+                            {pkg.features.map((feature, i) => (
+                              <li key={i}>• {feature}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        <button
+                          onClick={() => editPackage(pkg)}
+                          className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deletePackage(pkg.id)}
+                          className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
