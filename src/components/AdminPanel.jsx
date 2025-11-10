@@ -510,7 +510,16 @@ const AdminPanel = ({ onLogout }) => {
     <div className="min-h-screen bg-gray-900 p-8">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Admin Panel</h1>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => window.location.href = '/'}
+              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors flex items-center space-x-2"
+            >
+              <span>←</span>
+              <span>Back to Site</span>
+            </button>
+            <h1 className="text-3xl font-bold text-white">Admin Panel</h1>
+          </div>
           <div className="flex items-center space-x-4">
             {currentUser && (
               <div className="text-white">
