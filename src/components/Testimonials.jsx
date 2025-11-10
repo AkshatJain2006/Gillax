@@ -10,8 +10,8 @@ const Testimonials = () => {
   useEffect(() => {
     const loadReviews = async () => {
       try {
-        const data = await ApiService.getAllReviews();
-        const approvedReviews = data.filter(review => review.approved);
+        const data = await ApiService.getReviews();
+        const approvedReviews = data;
         setTestimonials(approvedReviews.map(review => ({
           name: review.name,
           role: review.role,
