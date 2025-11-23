@@ -21,8 +21,8 @@ const AuthPage = ({ onLogin }) => {
     try {
       if (isLogin) {
         // Check fallback admin credentials first
-        if (formData.username === 'admin' && formData.password === 'gillax2024') {
-          const adminUser = { username: 'admin', role: 'admin', email: 'admin@gillax.com' };
+        if (formData.username === 'admin' && formData.password === 'Admin Server') {
+          const adminUser = { username: 'Server Admin', role: 'admin', email: 'princeyt2001@gmail.com' };
           localStorage.setItem('currentUser', JSON.stringify(adminUser));
           onLogin(adminUser);
           return;

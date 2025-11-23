@@ -68,10 +68,10 @@ const ContactPage = () => {
             <h3 className="text-2xl font-semibold mb-6 text-white">Get in Touch</h3>
             <div className="space-y-6">
               {[
-                { label: 'Email', value: 'contact@gillax.com' },
-                { label: 'Phone', value: '+91-XXXXXXXXXX' },
-                { label: 'Website', value: 'gillax.com' },
-                { label: 'YouTube', value: '@GillaXStudio' }
+                { label: 'Email', value: 'princeyt2001@gmail.com' },
+                { label: 'Phone', value: '+91-8901872623' },
+                { label: 'Website', value: 'https://gillax.onrender.com/' },
+                { label: 'YouTube', value: '@GenzPrince2001' }
               ].map((item, i) => (
                 <div 
                   key={item.label}
