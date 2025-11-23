@@ -540,8 +540,6 @@ const AdminPanel = ({ onLogout }) => {
     setProjects(data);
   };
 
-
-
   return (
     <div className="min-h-screen bg-gray-900 p-8">
       <div className="max-w-4xl mx-auto">
@@ -644,9 +642,7 @@ const AdminPanel = ({ onLogout }) => {
           {showBulkUpload && !editingProject ? (
             <div className="space-y-4">
               <textarea
-                placeholder="Paste Google Drive links here (one per line):
-https://drive.google.com/file/d/FILE_ID1/view?usp=sharing
-https://drive.google.com/file/d/FILE_ID2/view?usp=sharing"
+                placeholder="Paste Google Drive links here (one per line):&#10;https://drive.google.com/file/d/FILE_ID1/view?usp=sharing&#10;https://drive.google.com/file/d/FILE_ID2/view?usp=sharing"
                 value={bulkLinks}
                 onChange={(e) => setBulkLinks(e.target.value)}
                 className="w-full p-3 bg-gray-700 text-white rounded h-32"
@@ -1268,6 +1264,6 @@ https://drive.google.com/file/d/FILE_ID2/view?usp=sharing"
       </div>
     </div>
   );
-
+};
 
 export default AdminPanel;
