@@ -123,7 +123,10 @@ const OtherWorkPage = () => {
                 className="aspect-video relative overflow-hidden cursor-pointer"
                 onMouseEnter={() => setHoveredWork(work)}
                 onMouseLeave={() => setHoveredWork(null)}
-                onClick={() => setSelectedWork(work)}
+                onClick={() => {
+                  console.log('Clicked work:', work);
+                  setSelectedWork(work);
+                }}
               >
                 <img 
                   src={work.image} 
@@ -135,12 +138,12 @@ const OtherWorkPage = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <div className="text-center">
-                    <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-2 mx-auto">
-                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-2 mx-auto">
+                      <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M8 5v14l11-7z"/>
                       </svg>
                     </div>
-                    <p className="text-white text-xs font-medium">Click to expand</p>
+                    <p className="text-white text-sm font-medium">Click to view</p>
                   </div>
                 </div>
                 
@@ -207,42 +210,14 @@ const OtherWorkPage = () => {
               </button>
               
               <div className="aspect-video relative bg-gray-800">
-                {(() => {
-                  // Check if it's a Google Drive video URL
-                  if (selectedWork.image && selectedWork.image.includes('drive.google.com') && selectedWork.image.includes('/d/')) {
-                    const fileId = selectedWork.image.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1] || selectedWork.image.match(/[?&]id=([a-zA-Z0-9-_]+)/)?.[1];
-                    return (
-                      <iframe
-                        src={`https://drive.google.com/file/d/${fileId}/preview`}
-                        className="w-full h-full"
-                        frameBorder="0"
-                        allow="autoplay"
-                      />
-                    );
-                  }
-                  // Check if it's a direct video file
-                  else if (selectedWork.image && (selectedWork.image.includes('.mp4') || selectedWork.image.includes('.mov') || selectedWork.image.includes('.avi'))) {
-                    return (
-                      <video
-                        src={selectedWork.image}
-                        className="w-full h-full object-cover"
-                        controls
-                        autoPlay
-                      />
-                    );
-                  }
-                  // Default to image
-                  else {
-                    return (
-                      <img
-                        src={selectedWork.image}
-                        alt={selectedWork.title}
-                        className="w-full h-full object-cover"
-                      />
-                    );
-                  }
-                })()
-                }
+                <img
+                  src={selectedWork.image}
+                  alt={selectedWork.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(selectedWork.title)}`;
+                  }}
+                />
               </div>
               
               <div className="p-6">
