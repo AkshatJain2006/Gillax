@@ -69,9 +69,9 @@ const ContactPage = () => {
             <div className="space-y-6">
               {[
                 { label: 'Email', value: 'gillaxediting@gmail.com' },
-                { label: 'Phone', value: '+91-8901872623' },
+                { label: 'Instagram', value: 'Gilla_x' },
                 { label: 'Website', value: 'https://gillax.onrender.com/' },
-                { label: 'YouTube', value: '@GenzPrince2001' }
+                { label: 'YouTube', value: '@Gilla_x' }
               ].map((item, i) => (
                 <div 
                   key={item.label}
