@@ -7,7 +7,8 @@ const AdminPanel = ({ onLogout }) => {
     title: '',
     description: '',
     youtubeLink: '',
-    category: ''
+    category: '',
+    thumbnail: ''
   });
   const [editingProject, setEditingProject] = useState(null);
   const [newWork, setNewWork] = useState({
@@ -233,11 +234,48 @@ const AdminPanel = ({ onLogout }) => {
   };
 
   const convertGoogleDriveUrl = (url) => {
-    // Convert Google Drive share URL to direct image URL
-    if (url.includes('drive.google.com/file/d/')) {
-      const fileId = url.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1];
-      return fileId ? `https://drive.google.com/uc?export=view&id=${fileId}` : url;
+    if (!url || typeof url !== 'string') return url;
+    
+    // Handle Google Drive URLs
+    if (url.includes('drive.google.com')) {
+      // Handle /file/d/ format
+      let fileId = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/)?.[1];
+      // Handle /open?id= format
+      if (!fileId) fileId = url.match(/[?&]id=([a-zA-Z0-9-_]+)/)?.[1];
+      // Handle /uc?id= format
+      if (!fileId) fileId = url.match(/\/uc\?.*id=([a-zA-Z0-9-_]+)/)?.[1];
+      
+      if (fileId) {
+        // Try different Google Drive endpoints for better compatibility
+        return `https://lh3.googleusercontent.com/d/${fileId}=w1000-h600-no`;
+      }
     }
+    
+    // Handle Imgur URLs
+    if (url.includes('imgur.com')) {
+      // Convert imgur gallery to direct image
+      if (url.includes('/gallery/') || url.includes('/a/')) {
+        const imgId = url.match(/\/(gallery|a)\/([a-zA-Z0-9]+)/)?.[2];
+        return imgId ? `https://i.imgur.com/${imgId}.jpg` : url;
+      }
+      // Ensure direct imgur link
+      if (!url.includes('i.imgur.com')) {
+        const imgId = url.match(/imgur\.com\/([a-zA-Z0-9]+)/)?.[1];
+        return imgId ? `https://i.imgur.com/${imgId}.jpg` : url;
+      }
+    }
+    
+    // Handle Dropbox URLs
+    if (url.includes('dropbox.com')) {
+      return url.replace('?dl=0', '?raw=1');
+    }
+    
+    // Handle OneDrive URLs
+    if (url.includes('1drv.ms') || url.includes('onedrive.live.com')) {
+      return url.replace('/view?', '/download?');
+    }
+    
+    // Return original URL if no conversion needed
     return url;
   };
 
@@ -682,14 +720,36 @@ const AdminPanel = ({ onLogout }) => {
               rows="3"
               required
             />
-            <input
-              type="url"
-              placeholder="YouTube Link"
-              value={newProject.youtubeLink}
-              onChange={(e) => setNewProject({...newProject, youtubeLink: e.target.value})}
-              className="w-full p-3 bg-gray-700 text-white rounded"
-              required
-            />
+            <div>
+              <label className="block text-white mb-2">Video URL</label>
+              <input
+                type="url"
+                placeholder="YouTube, Google Drive, or direct video URL"
+                value={newProject.youtubeLink}
+                onChange={(e) => setNewProject({...newProject, youtubeLink: e.target.value})}
+                className="w-full p-3 bg-gray-700 text-white rounded"
+                required
+              />
+              <div className="text-gray-400 text-xs mt-1 space-y-1">
+                <p>• YouTube: Copy video URL</p>
+                <p>• Google Drive: Share video → Copy link → Make public</p>
+                <p>• Direct: .mp4, .mov, .avi links</p>
+              </div>
+            </div>
+            <div>
+              <label className="block text-white mb-2">Custom Thumbnail (Optional)</label>
+              <input
+                type="url"
+                placeholder="Custom thumbnail image URL"
+                value={newProject.thumbnail}
+                onChange={(e) => setNewProject({...newProject, thumbnail: e.target.value})}
+                className="w-full p-3 bg-gray-700 text-white rounded"
+              />
+              <p className="text-gray-400 text-xs mt-1">Leave empty to auto-generate from video URL</p>
+              {newProject.thumbnail && (
+                <img src={newProject.thumbnail} alt="Thumbnail preview" className="mt-2 w-32 h-20 object-cover rounded" onError={(e) => e.target.style.display = 'none'} />
+              )}
+            </div>
             <select
               value={newProject.category}
               onChange={(e) => setNewProject({...newProject, category: e.target.value})}
@@ -803,19 +863,64 @@ const AdminPanel = ({ onLogout }) => {
               required
             />
             <div>
-              <label className="block text-white mb-2">Image URL (Google Drive)</label>
-              <input
-                type="url"
-                placeholder="Paste Google Drive image URL here"
-                value={newWork.image || ''}
-                onChange={(e) => setNewWork({...newWork, image: e.target.value})}
-                className="w-full p-3 bg-gray-700 text-white rounded"
-              />
-              <p className="text-gray-400 text-xs mt-1">
-                Upload image to Google Drive → Right click → Get link → Make sure it's public
-              </p>
+              <label className="block text-white mb-2">Image/Video Upload Options</label>
+              
+              {/* File Upload */}
+              <div className="mb-3">
+                <label className="block text-gray-300 text-sm mb-1">1. Upload File (Recommended)</label>
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (e) => {
+                        setNewWork({...newWork, image: e.target.result});
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="w-full p-2 bg-gray-700 text-white rounded text-sm"
+                />
+                <p className="text-gray-400 text-xs mt-1">Upload directly from your computer (images/videos)</p>
+              </div>
+              
+              {/* URL Input */}
+              <div className="mb-3">
+                <label className="block text-gray-300 text-sm mb-1">2. Or Paste URL</label>
+                <input
+                  type="url"
+                  placeholder="Google Drive, Imgur, or direct image URL"
+                  value={typeof newWork.image === 'string' && !newWork.image.startsWith('data:') ? newWork.image : ''}
+                  onChange={(e) => setNewWork({...newWork, image: e.target.value})}
+                  className="w-full p-3 bg-gray-700 text-white rounded"
+                />
+                <div className="text-gray-400 text-xs mt-1 space-y-1">
+                  <p>• Google Drive: Share → Copy link → Make public</p>
+                  <p>• Imgur: Upload → Copy direct link</p>
+                  <p>• Direct URLs: .jpg, .png, .gif, .mp4 links</p>
+                </div>
+              </div>
+              
+              {/* Preview */}
               {newWork.image && (
-                <img src={newWork.image} alt="Preview" className="mt-2 w-32 h-20 object-cover rounded" onError={(e) => e.target.style.display = 'none'} />
+                <div className="mt-3">
+                  <label className="block text-gray-300 text-sm mb-1">Preview:</label>
+                  {newWork.image.startsWith('data:') ? (
+                    <img src={newWork.image} alt="Preview" className="w-32 h-20 object-cover rounded" />
+                  ) : (
+                    <img 
+                      src={convertGoogleDriveUrl(newWork.image)} 
+                      alt="Preview" 
+                      className="w-32 h-20 object-cover rounded" 
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        console.log('Image failed to load:', newWork.image);
+                      }} 
+                    />
+                  )}
+                </div>
               )}
             </div>
             <div className="flex gap-2">

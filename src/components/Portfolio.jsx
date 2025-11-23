@@ -104,15 +104,66 @@ const Portfolio = () => {
                   y: -5
                 }}
               >
-                <div className="aspect-video relative overflow-hidden bg-gray-800 cursor-pointer" onClick={() => window.open(project.youtubeLink.includes('watch') ? project.youtubeLink : `https://www.youtube.com/watch?v=${project.youtubeLink.split('/').pop()}`, '_blank')}>
-                  <img
-                    src={`https://img.youtube.com/vi/${project.youtubeLink.split('v=')[1]?.split('&')[0] || project.youtubeLink.split('/').pop()}/maxresdefault.jpg`}
-                    alt={project.title}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                    onError={(e) => {
-                      e.target.src = `https://img.youtube.com/vi/${project.youtubeLink.split('v=')[1]?.split('&')[0] || project.youtubeLink.split('/').pop()}/hqdefault.jpg`;
-                    }}
-                  />
+                <div className="aspect-video relative overflow-hidden bg-gray-800 cursor-pointer" onClick={() => window.open(project.youtubeLink, '_blank')}>
+                  {(() => {
+                    // Use custom thumbnail if provided
+                    if (project.thumbnail) {
+                      return (
+                        <img
+                          src={project.thumbnail}
+                          alt={project.title}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          onError={(e) => {
+                            e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
+                          }}
+                        />
+                      );
+                    }
+                    // Check if it's a YouTube URL
+                    else if (project.youtubeLink.includes('youtube.com') || project.youtubeLink.includes('youtu.be')) {
+                      const videoId = project.youtubeLink.split('v=')[1]?.split('&')[0] || project.youtubeLink.split('/').pop();
+                      return (
+                        <img
+                          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                          alt={project.title}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          onError={(e) => {
+                            e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                          }}
+                        />
+                      );
+                    }
+                    // Check if it's a Google Drive URL
+                    else if (project.youtubeLink.includes('drive.google.com')) {
+                      const fileId = project.youtubeLink.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1] || project.youtubeLink.match(/[?&]id=([a-zA-Z0-9-_]+)/)?.[1];
+                      if (fileId) {
+                        return (
+                          <img
+                            src={`https://lh3.googleusercontent.com/d/${fileId}=w800-h450-no`}
+                            alt={project.title}
+                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            onError={(e) => {
+                              e.target.src = `https://drive.google.com/uc?export=view&id=${fileId}`;
+                            }}
+                          />
+                        );
+                      }
+                    }
+                    // For direct image/video URLs or other platforms
+                    else {
+                      return (
+                        <img
+                          src={project.youtubeLink}
+                          alt={project.title}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                          onError={(e) => {
+                            e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
+                          }}
+                        />
+                      );
+                    }
+                  })()
+                  }
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
