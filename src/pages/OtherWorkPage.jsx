@@ -125,26 +125,11 @@ const OtherWorkPage = () => {
                 onMouseLeave={() => setHoveredWork(null)}
                 onClick={() => setSelectedWork(work)}
               >
-                {hoveredWork && hoveredWork.id === work.id && work.image && work.image.includes('drive.google.com') ? (
-                  // Show video preview on hover for Google Drive videos
-                  <video
-                    src={work.image.includes('drive.google.com') ? 
-                      `https://drive.google.com/uc?export=view&id=${work.image.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1] || work.image.match(/[?&]id=([a-zA-Z0-9-_]+)/)?.[1]}` : 
-                      work.image
-                    }
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    muted
-                    loop
-                  />
-                ) : (
-                  // Show static image when not hovered
-                  <img 
-                    src={work.image} 
-                    alt={work.title}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                  />
-                )}
+                <img 
+                  src={work.image} 
+                  alt={work.title}
+                  className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                />
                 
                 {/* Hover overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -159,13 +144,7 @@ const OtherWorkPage = () => {
                   </div>
                 </div>
                 
-                {/* Video preview indicator */}
-                {hoveredWork && hoveredWork.id === work.id && work.image && work.image.includes('drive.google.com') && (
-                  <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center space-x-1">
-                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                    <span>PREVIEW</span>
-                  </div>
-                )}
+
                 
                 {/* Category Badge */}
                 <div className="absolute top-4 left-4 px-3 py-1 bg-blue-500/80 backdrop-blur-sm rounded-full text-white text-sm font-medium capitalize">
@@ -227,23 +206,43 @@ const OtherWorkPage = () => {
                 </svg>
               </button>
               
-              <div className="aspect-video relative">
-                {selectedWork.image && selectedWork.image.includes('drive.google.com') ? (
-                  // Google Drive video
-                  <video
-                    src={`https://drive.google.com/uc?export=view&id=${selectedWork.image.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1] || selectedWork.image.match(/[?&]id=([a-zA-Z0-9-_]+)/)?.[1]}`}
-                    className="w-full h-full object-cover"
-                    controls
-                    autoPlay
-                  />
-                ) : (
-                  // Static image
-                  <img
-                    src={selectedWork.image}
-                    alt={selectedWork.title}
-                    className="w-full h-full object-cover"
-                  />
-                )}
+              <div className="aspect-video relative bg-gray-800">
+                {(() => {
+                  // Check if it's a Google Drive video URL
+                  if (selectedWork.image && selectedWork.image.includes('drive.google.com') && selectedWork.image.includes('/d/')) {
+                    const fileId = selectedWork.image.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1] || selectedWork.image.match(/[?&]id=([a-zA-Z0-9-_]+)/)?.[1];
+                    return (
+                      <iframe
+                        src={`https://drive.google.com/file/d/${fileId}/preview`}
+                        className="w-full h-full"
+                        frameBorder="0"
+                        allow="autoplay"
+                      />
+                    );
+                  }
+                  // Check if it's a direct video file
+                  else if (selectedWork.image && (selectedWork.image.includes('.mp4') || selectedWork.image.includes('.mov') || selectedWork.image.includes('.avi'))) {
+                    return (
+                      <video
+                        src={selectedWork.image}
+                        className="w-full h-full object-cover"
+                        controls
+                        autoPlay
+                      />
+                    );
+                  }
+                  // Default to image
+                  else {
+                    return (
+                      <img
+                        src={selectedWork.image}
+                        alt={selectedWork.title}
+                        className="w-full h-full object-cover"
+                      />
+                    );
+                  }
+                })()
+                }
               </div>
               
               <div className="p-6">
