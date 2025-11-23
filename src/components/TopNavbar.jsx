@@ -28,11 +28,11 @@ const TopNavbar = ({ currentPage, setCurrentPage, currentUser, onLogin, onLogout
               className="flex items-center space-x-3"
               whileHover={{ scale: 1.02 }}
             >
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
+              <div className="w-16 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-lg flex items-center justify-center">
                 <img 
                   src="/logo.png" 
                   alt="GillaX Logo" 
-                  className="w-6 h-6 object-contain"
+                  className="w-12 h-8 object-cover"
                 />
               </div>
               <h1 className="text-xl font-bold text-white premium-font">
