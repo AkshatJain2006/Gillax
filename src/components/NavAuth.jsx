@@ -21,8 +21,8 @@ const NavAuth = ({ onLogin, currentUser, onLogout, onAdminAccess }) => {
 
     try {
       if (isLogin) {
-        if (formData.username === 'admin' && formData.password === 'gillax2024') {
-          const adminUser = { username: 'admin', role: 'admin', email: 'admin@gillax.com' };
+        if (formData.username === 'ServerAdmin' && formData.password === 'AdminServer') {
+          const adminUser = { username: 'admin', role: 'admin', email: 'gillaxediting@gmail.com' };
           localStorage.setItem('currentUser', JSON.stringify(adminUser));
           onLogin(adminUser);
           setShowAuth(false);

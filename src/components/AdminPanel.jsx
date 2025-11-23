@@ -42,6 +42,9 @@ const AdminPanel = ({ onLogout }) => {
     mostPopular: false
   });
   const [editingPackage, setEditingPackage] = useState(null);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [bulkLinks, setBulkLinks] = useState('');
+  const [bulkCategory, setBulkCategory] = useState('gaming');
 
   useEffect(() => {
     // Load projects from backend API
@@ -504,6 +507,39 @@ const AdminPanel = ({ onLogout }) => {
     }
   };
 
+  const handleBulkUpload = async () => {
+    const links = bulkLinks.split('\n').filter(link => link.trim());
+    let successCount = 0;
+    
+    for (const link of links) {
+      const fileIdMatch = link.match(/\/d\/([a-zA-Z0-9-_]+)/);
+      if (fileIdMatch) {
+        const fileId = fileIdMatch[1];
+        const convertedLink = `https://drive.google.com/uc?export=view&id=${fileId}`;
+        
+        try {
+          await ApiService.createProject({
+            title: `Video ${successCount + 1}`,
+            description: 'Uploaded via bulk upload',
+            youtubeLink: convertedLink,
+            category: bulkCategory
+          });
+          successCount++;
+        } catch (error) {
+          console.error('Failed to upload:', error);
+        }
+      }
+    }
+    
+    alert(`Successfully uploaded ${successCount} videos!`);
+    setBulkLinks('');
+    setShowBulkUpload(false);
+    
+    // Reload projects
+    const data = await ApiService.getProjects();
+    setProjects(data);
+  };
+
 
 
   return (
@@ -591,9 +627,48 @@ const AdminPanel = ({ onLogout }) => {
         
         {activeTab === 'portfolio' && (
         <div className="bg-gray-800 p-6 rounded-lg mb-8">
-          <h2 className="text-xl font-semibold text-white mb-4">
-            {editingProject ? 'Edit Project' : 'Add New Project'}
-          </h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-white">
+              {editingProject ? 'Edit Project' : 'Add New Project'}
+            </h2>
+            {!editingProject && (
+              <button
+                onClick={() => setShowBulkUpload(!showBulkUpload)}
+                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+              >
+                {showBulkUpload ? 'Single Upload' : 'Bulk Upload'}
+              </button>
+            )}
+          </div>
+          
+          {showBulkUpload && !editingProject ? (
+            <div className="space-y-4">
+              <textarea
+                placeholder="Paste Google Drive links here (one per line):
+https://drive.google.com/file/d/FILE_ID1/view?usp=sharing
+https://drive.google.com/file/d/FILE_ID2/view?usp=sharing"
+                value={bulkLinks}
+                onChange={(e) => setBulkLinks(e.target.value)}
+                className="w-full p-3 bg-gray-700 text-white rounded h-32"
+              />
+              <select
+                value={bulkCategory}
+                onChange={(e) => setBulkCategory(e.target.value)}
+                className="w-full p-3 bg-gray-700 text-white rounded"
+              >
+                <option value="gaming">Gaming</option>
+                <option value="education">Education</option>
+                <option value="motion">Motion Graphics</option>
+                <option value="3d">3D Animation</option>
+              </select>
+              <button
+                onClick={handleBulkUpload}
+                className="px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700"
+              >
+                Process Bulk Upload
+              </button>
+            </div>
+          ) : (
           <form onSubmit={editingProject ? updateProject : addProject} className="space-y-4">
             <input
               type="text"
@@ -649,6 +724,7 @@ const AdminPanel = ({ onLogout }) => {
               )}
             </div>
           </form>
+          )}
         </div>
         )}
         
@@ -1192,6 +1268,6 @@ const AdminPanel = ({ onLogout }) => {
       </div>
     </div>
   );
-};
+
 
 export default AdminPanel;
