@@ -138,14 +138,20 @@ const Portfolio = () => {
                       const fileId = project.youtubeLink.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1] || project.youtubeLink.match(/[?&]id=([a-zA-Z0-9-_]+)/)?.[1];
                       if (fileId) {
                         return (
-                          <img
-                            src={`https://lh3.googleusercontent.com/d/${fileId}=w800-h450-no`}
-                            alt={project.title}
-                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                            onError={(e) => {
-                              e.target.src = `https://drive.google.com/uc?export=view&id=${fileId}`;
-                            }}
-                          />
+                          <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex flex-col items-center justify-center relative">
+                            <div className="text-center">
+                              <div className="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mb-3">
+                                <svg className="w-8 h-8 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M8 5v14l11-7z"/>
+                                </svg>
+                              </div>
+                              <h3 className="text-white font-medium text-lg mb-1">{project.title}</h3>
+                              <p className="text-gray-400 text-sm">Click to play video</p>
+                            </div>
+                            <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                              Google Drive
+                            </div>
+                          </div>
                         );
                       }
                     }

@@ -737,15 +737,19 @@ const AdminPanel = ({ onLogout }) => {
               </div>
             </div>
             <div>
-              <label className="block text-white mb-2">Custom Thumbnail (Optional)</label>
+              <label className="block text-white mb-2">Custom Thumbnail {newProject.youtubeLink.includes('drive.google.com') ? '(Required for Google Drive)' : '(Optional)'}</label>
               <input
                 type="url"
-                placeholder="Custom thumbnail image URL"
+                placeholder="Thumbnail image URL (screenshot of your video)"
                 value={newProject.thumbnail}
                 onChange={(e) => setNewProject({...newProject, thumbnail: e.target.value})}
                 className="w-full p-3 bg-gray-700 text-white rounded"
               />
-              <p className="text-gray-400 text-xs mt-1">Leave empty to auto-generate from video URL</p>
+              <div className="text-gray-400 text-xs mt-1 space-y-1">
+                <p>• YouTube: Auto-generated (optional override)</p>
+                <p>• Google Drive: Required - take screenshot of video</p>
+                <p>• Upload screenshot to Google Drive/Imgur and paste link</p>
+              </div>
               {newProject.thumbnail && (
                 <img src={newProject.thumbnail} alt="Thumbnail preview" className="mt-2 w-32 h-20 object-cover rounded" onError={(e) => e.target.style.display = 'none'} />
               )}
