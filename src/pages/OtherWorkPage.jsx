@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const OtherWorkPage = () => {
   const [works, setWorks] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [categories, setCategories] = useState([]);
+  const [hoveredWork, setHoveredWork] = useState(null);
+  const [selectedWork, setSelectedWork] = useState(null);
 
   useEffect(() => {
     // Load categories from localStorage
@@ -117,13 +119,53 @@ const OtherWorkPage = () => {
               whileHover={{ scale: 1.03, y: -5 }}
             >
               {/* Image */}
-              <div className="aspect-video relative overflow-hidden">
-                <img 
-                  src={work.image} 
-                  alt={work.title}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                />
+              <div 
+                className="aspect-video relative overflow-hidden cursor-pointer"
+                onMouseEnter={() => setHoveredWork(work)}
+                onMouseLeave={() => setHoveredWork(null)}
+                onClick={() => setSelectedWork(work)}
+              >
+                {hoveredWork && hoveredWork.id === work.id && work.image && work.image.includes('drive.google.com') ? (
+                  // Show video preview on hover for Google Drive videos
+                  <video
+                    src={work.image.includes('drive.google.com') ? 
+                      `https://drive.google.com/uc?export=view&id=${work.image.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1] || work.image.match(/[?&]id=([a-zA-Z0-9-_]+)/)?.[1]}` : 
+                      work.image
+                    }
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    muted
+                    loop
+                  />
+                ) : (
+                  // Show static image when not hovered
+                  <img 
+                    src={work.image} 
+                    alt={work.title}
+                    className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                  />
+                )}
+                
+                {/* Hover overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="text-center">
+                    <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-2 mx-auto">
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                      </svg>
+                    </div>
+                    <p className="text-white text-xs font-medium">Click to expand</p>
+                  </div>
+                </div>
+                
+                {/* Video preview indicator */}
+                {hoveredWork && hoveredWork.id === work.id && work.image && work.image.includes('drive.google.com') && (
+                  <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center space-x-1">
+                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
+                    <span>PREVIEW</span>
+                  </div>
+                )}
                 
                 {/* Category Badge */}
                 <div className="absolute top-4 left-4 px-3 py-1 bg-blue-500/80 backdrop-blur-sm rounded-full text-white text-sm font-medium capitalize">
@@ -158,6 +200,69 @@ const OtherWorkPage = () => {
           </div>
         )}
       </div>
+      
+      {/* Work Modal */}
+      <AnimatePresence>
+        {selectedWork && (
+          <motion.div
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedWork(null)}
+          >
+            <motion.div
+              className="relative w-full max-w-4xl bg-gray-900 rounded-lg overflow-hidden"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedWork(null)}
+                className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              
+              <div className="aspect-video relative">
+                {selectedWork.image && selectedWork.image.includes('drive.google.com') ? (
+                  // Google Drive video
+                  <video
+                    src={`https://drive.google.com/uc?export=view&id=${selectedWork.image.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1] || selectedWork.image.match(/[?&]id=([a-zA-Z0-9-_]+)/)?.[1]}`}
+                    className="w-full h-full object-cover"
+                    controls
+                    autoPlay
+                  />
+                ) : (
+                  // Static image
+                  <img
+                    src={selectedWork.image}
+                    alt={selectedWork.title}
+                    className="w-full h-full object-cover"
+                  />
+                )}
+              </div>
+              
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="px-3 py-1 bg-blue-500 rounded-full text-white text-sm font-medium capitalize">
+                    {selectedWork.category}
+                  </span>
+                  <span className="text-blue-400 font-medium">{selectedWork.stats}</span>
+                </div>
+                <h3 className="text-white text-2xl font-semibold mb-3">{selectedWork.title}</h3>
+                <p className="text-gray-300 leading-relaxed mb-4">{selectedWork.description}</p>
+                <div className="text-sm text-gray-500">
+                  {new Date(selectedWork.date).toLocaleDateString()}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

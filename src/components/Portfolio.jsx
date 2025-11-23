@@ -7,6 +7,7 @@ const Portfolio = () => {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [hoveredVideo, setHoveredVideo] = useState(null);
   
   useEffect(() => {
     const loadProjects = async () => {
@@ -105,57 +106,108 @@ const Portfolio = () => {
                   y: -5
                 }}
               >
-                <div className="aspect-video relative overflow-hidden bg-gray-800 cursor-pointer" onClick={() => setSelectedVideo(project)}>
-                  {(() => {
-                    // Use custom thumbnail if provided
-                    if (project.thumbnail) {
-                      return (
-                        <img
-                          src={project.thumbnail}
-                          alt={project.title}
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                          onError={(e) => {
-                            e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
-                          }}
-                        />
-                      );
-                    }
-                    // Check if it's a YouTube URL
-                    else if (project.youtubeLink.includes('youtube.com') || project.youtubeLink.includes('youtu.be')) {
-                      let videoId = '';
-                      
-                      // Extract video ID from different YouTube URL formats
-                      if (project.youtubeLink.includes('watch?v=')) {
-                        videoId = project.youtubeLink.split('watch?v=')[1]?.split('&')[0];
-                      } else if (project.youtubeLink.includes('youtu.be/')) {
-                        videoId = project.youtubeLink.split('youtu.be/')[1]?.split('?')[0];
-                      } else if (project.youtubeLink.includes('/embed/')) {
-                        videoId = project.youtubeLink.split('/embed/')[1]?.split('?')[0];
-                      } else if (project.youtubeLink.includes('/v/')) {
-                        videoId = project.youtubeLink.split('/v/')[1]?.split('?')[0];
+                <div 
+                  className="aspect-video relative overflow-hidden bg-gray-800 cursor-pointer" 
+                  onMouseEnter={() => setHoveredVideo(project)}
+                  onMouseLeave={() => setHoveredVideo(null)}
+                  onClick={() => setSelectedVideo(project)}
+                >
+                  {hoveredVideo && hoveredVideo._id === project._id ? (
+                    // Show video preview on hover
+                    (() => {
+                      // YouTube videos
+                      if (project.youtubeLink.includes('youtube.com') || project.youtubeLink.includes('youtu.be')) {
+                        let videoId = '';
+                        if (project.youtubeLink.includes('watch?v=')) {
+                          videoId = project.youtubeLink.split('watch?v=')[1]?.split('&')[0];
+                        } else if (project.youtubeLink.includes('youtu.be/')) {
+                          videoId = project.youtubeLink.split('youtu.be/')[1]?.split('?')[0];
+                        } else if (project.youtubeLink.includes('/embed/')) {
+                          videoId = project.youtubeLink.split('/embed/')[1]?.split('?')[0];
+                        }
+                        
+                        return (
+                          <iframe
+                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}`}
+                            className="w-full h-full"
+                            frameBorder="0"
+                            allow="autoplay; encrypted-media"
+                          />
+                        );
                       }
-                      
-                      if (videoId) {
+                      // Google Drive videos
+                      else if (project.youtubeLink.includes('drive.google.com')) {
+                        const fileId = project.youtubeLink.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1] || project.youtubeLink.match(/[?&]id=([a-zA-Z0-9-_]+)/)?.[1];
+                        return (
+                          <video
+                            src={`https://drive.google.com/uc?export=view&id=${fileId}`}
+                            className="w-full h-full object-cover"
+                            autoPlay
+                            muted
+                            loop
+                          />
+                        );
+                      }
+                      // Direct video files
+                      else {
+                        return (
+                          <video
+                            src={project.youtubeLink}
+                            className="w-full h-full object-cover"
+                            autoPlay
+                            muted
+                            loop
+                          />
+                        );
+                      }
+                    })()
+                  ) : (
+                    // Show thumbnail when not hovered
+                    (() => {
+                      // Use custom thumbnail if provided
+                      if (project.thumbnail) {
                         return (
                           <img
-                            src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                            src={project.thumbnail}
                             alt={project.title}
                             className="w-full h-full object-cover transition-transform group-hover:scale-105"
                             onError={(e) => {
-                              if (e.target.src.includes('maxresdefault')) {
-                                e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                              } else {
-                                e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
-                              }
+                              e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
                             }}
                           />
                         );
                       }
-                    }
-                    // Check if it's a Google Drive URL
-                    else if (project.youtubeLink.includes('drive.google.com')) {
-                      const fileId = project.youtubeLink.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1] || project.youtubeLink.match(/[?&]id=([a-zA-Z0-9-_]+)/)?.[1];
-                      if (fileId) {
+                      // Check if it's a YouTube URL
+                      else if (project.youtubeLink.includes('youtube.com') || project.youtubeLink.includes('youtu.be')) {
+                        let videoId = '';
+                        
+                        if (project.youtubeLink.includes('watch?v=')) {
+                          videoId = project.youtubeLink.split('watch?v=')[1]?.split('&')[0];
+                        } else if (project.youtubeLink.includes('youtu.be/')) {
+                          videoId = project.youtubeLink.split('youtu.be/')[1]?.split('?')[0];
+                        } else if (project.youtubeLink.includes('/embed/')) {
+                          videoId = project.youtubeLink.split('/embed/')[1]?.split('?')[0];
+                        }
+                        
+                        if (videoId) {
+                          return (
+                            <img
+                              src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                              alt={project.title}
+                              className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                              onError={(e) => {
+                                if (e.target.src.includes('maxresdefault')) {
+                                  e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                } else {
+                                  e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
+                                }
+                              }}
+                            />
+                          );
+                        }
+                      }
+                      // Google Drive placeholder
+                      else if (project.youtubeLink.includes('drive.google.com')) {
                         return (
                           <div className="w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 flex flex-col items-center justify-center relative">
                             <div className="text-center">
@@ -165,38 +217,47 @@ const Portfolio = () => {
                                 </svg>
                               </div>
                               <h3 className="text-white font-medium text-lg mb-1">{project.title}</h3>
-                              <p className="text-gray-400 text-sm">Click to play video</p>
-                            </div>
-                            <div className="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                              Google Drive
+                              <p className="text-gray-400 text-sm">Hover to preview</p>
                             </div>
                           </div>
                         );
                       }
-                    }
-                    // For direct image/video URLs or other platforms
-                    else {
-                      return (
-                        <img
-                          src={project.youtubeLink}
-                          alt={project.title}
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                          onError={(e) => {
-                            e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
-                          }}
-                        />
-                      );
-                    }
-                  })()
+                      // Direct image/video URLs
+                      else {
+                        return (
+                          <img
+                            src={project.youtubeLink}
+                            alt={project.title}
+                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            onError={(e) => {
+                              e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
+                            }}
+                          />
+                        );
+                      }
+                    })()
+                  )
                   }
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                      <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z"/>
-                      </svg>
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-2 mx-auto">
+                        <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8 5v14l11-7z"/>
+                        </svg>
+                      </div>
+                      <p className="text-white text-sm font-medium">Click to expand</p>
                     </div>
                   </div>
+                  
+                  {/* Video preview indicator */}
+                  {hoveredVideo && hoveredVideo._id === project._id && (
+                    <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded flex items-center space-x-1">
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                      <span>LIVE PREVIEW</span>
+                    </div>
+                  )}
                 </div>
                 <div className="p-6 text-center">
                   <h3 className="text-xl font-light italic text-white group-hover:text-primary transition-colors">{project.title}</h3>
