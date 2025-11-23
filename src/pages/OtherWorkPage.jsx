@@ -128,11 +128,46 @@ const OtherWorkPage = () => {
                   setSelectedWork(work);
                 }}
               >
-                <img 
-                  src={work.image} 
-                  alt={work.title}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                />
+                {(() => {
+                  // Check if it's a YouTube URL and generate thumbnail
+                  if (work.image && (work.image.includes('youtube.com') || work.image.includes('youtu.be'))) {
+                    let videoId = '';
+                    if (work.image.includes('watch?v=')) {
+                      videoId = work.image.split('watch?v=')[1]?.split('&')[0];
+                    } else if (work.image.includes('youtu.be/')) {
+                      videoId = work.image.split('youtu.be/')[1]?.split('?')[0];
+                    }
+                    
+                    if (videoId) {
+                      return (
+                        <img
+                          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                          alt={work.title}
+                          className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                          onError={(e) => {
+                            if (e.target.src.includes('maxresdefault')) {
+                              e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                            } else {
+                              e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(work.title)}`;
+                            }
+                          }}
+                        />
+                      );
+                    }
+                  }
+                  
+                  // Default image display
+                  return (
+                    <img 
+                      src={work.image} 
+                      alt={work.title}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                      onError={(e) => {
+                        e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(work.title)}`;
+                      }}
+                    />
+                  );
+                })()
                 
                 {/* Hover overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -210,14 +245,69 @@ const OtherWorkPage = () => {
               </button>
               
               <div className="aspect-video relative bg-gray-800">
-                <img
-                  src={selectedWork.image}
-                  alt={selectedWork.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(selectedWork.title)}`;
-                  }}
-                />
+                {(() => {
+                  // Check if it's a YouTube URL
+                  if (selectedWork.image && (selectedWork.image.includes('youtube.com') || selectedWork.image.includes('youtu.be'))) {
+                    let videoId = '';
+                    if (selectedWork.image.includes('watch?v=')) {
+                      videoId = selectedWork.image.split('watch?v=')[1]?.split('&')[0];
+                    } else if (selectedWork.image.includes('youtu.be/')) {
+                      videoId = selectedWork.image.split('youtu.be/')[1]?.split('?')[0];
+                    }
+                    
+                    if (videoId) {
+                      return (
+                        <iframe
+                          src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+                          className="w-full h-full"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      );
+                    }
+                  }
+                  
+                  // Check if it's a Google Drive URL
+                  if (selectedWork.image && selectedWork.image.includes('drive.google.com') && selectedWork.image.includes('/d/')) {
+                    const fileId = selectedWork.image.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1];
+                    if (fileId) {
+                      return (
+                        <iframe
+                          src={`https://drive.google.com/file/d/${fileId}/preview`}
+                          className="w-full h-full"
+                          frameBorder="0"
+                          allow="autoplay"
+                        />
+                      );
+                    }
+                  }
+                  
+                  // Check if it's a direct video file
+                  if (selectedWork.image && (selectedWork.image.includes('.mp4') || selectedWork.image.includes('.mov') || selectedWork.image.includes('.avi'))) {
+                    return (
+                      <video
+                        src={selectedWork.image}
+                        className="w-full h-full object-cover"
+                        controls
+                        autoPlay
+                      />
+                    );
+                  }
+                  
+                  // Default to image
+                  return (
+                    <img
+                      src={selectedWork.image}
+                      alt={selectedWork.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(selectedWork.title)}`;
+                      }}
+                    />
+                  );
+                })()
+                }
               </div>
               
               <div className="p-6">
