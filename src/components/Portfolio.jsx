@@ -6,6 +6,7 @@ const Portfolio = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedVideo, setSelectedVideo] = useState(null);
   
   useEffect(() => {
     const loadProjects = async () => {
@@ -104,7 +105,7 @@ const Portfolio = () => {
                   y: -5
                 }}
               >
-                <div className="aspect-video relative overflow-hidden bg-gray-800 cursor-pointer" onClick={() => window.open(project.youtubeLink, '_blank')}>
+                <div className="aspect-video relative overflow-hidden bg-gray-800 cursor-pointer" onClick={() => setSelectedVideo(project)}>
                   {(() => {
                     // Use custom thumbnail if provided
                     if (project.thumbnail) {
@@ -121,17 +122,35 @@ const Portfolio = () => {
                     }
                     // Check if it's a YouTube URL
                     else if (project.youtubeLink.includes('youtube.com') || project.youtubeLink.includes('youtu.be')) {
-                      const videoId = project.youtubeLink.split('v=')[1]?.split('&')[0] || project.youtubeLink.split('/').pop();
-                      return (
-                        <img
-                          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
-                          alt={project.title}
-                          className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                          onError={(e) => {
-                            e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                          }}
-                        />
-                      );
+                      let videoId = '';
+                      
+                      // Extract video ID from different YouTube URL formats
+                      if (project.youtubeLink.includes('watch?v=')) {
+                        videoId = project.youtubeLink.split('watch?v=')[1]?.split('&')[0];
+                      } else if (project.youtubeLink.includes('youtu.be/')) {
+                        videoId = project.youtubeLink.split('youtu.be/')[1]?.split('?')[0];
+                      } else if (project.youtubeLink.includes('/embed/')) {
+                        videoId = project.youtubeLink.split('/embed/')[1]?.split('?')[0];
+                      } else if (project.youtubeLink.includes('/v/')) {
+                        videoId = project.youtubeLink.split('/v/')[1]?.split('?')[0];
+                      }
+                      
+                      if (videoId) {
+                        return (
+                          <img
+                            src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                            alt={project.title}
+                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                            onError={(e) => {
+                              if (e.target.src.includes('maxresdefault')) {
+                                e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                              } else {
+                                e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
+                              }
+                            }}
+                          />
+                        );
+                      }
                     }
                     // Check if it's a Google Drive URL
                     else if (project.youtubeLink.includes('drive.google.com')) {
@@ -188,6 +207,89 @@ const Portfolio = () => {
           </AnimatePresence>
         )}
       </div>
+      
+      {/* Video Modal */}
+      <AnimatePresence>
+        {selectedVideo && (
+          <motion.div
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedVideo(null)}
+          >
+            <motion.div
+              className="relative w-full max-w-4xl aspect-video bg-black rounded-lg overflow-hidden"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setSelectedVideo(null)}
+                className="absolute top-4 right-4 z-10 w-10 h-10 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              
+              {(() => {
+                // YouTube videos
+                if (selectedVideo.youtubeLink.includes('youtube.com') || selectedVideo.youtubeLink.includes('youtu.be')) {
+                  let videoId = '';
+                  if (selectedVideo.youtubeLink.includes('watch?v=')) {
+                    videoId = selectedVideo.youtubeLink.split('watch?v=')[1]?.split('&')[0];
+                  } else if (selectedVideo.youtubeLink.includes('youtu.be/')) {
+                    videoId = selectedVideo.youtubeLink.split('youtu.be/')[1]?.split('?')[0];
+                  } else if (selectedVideo.youtubeLink.includes('/embed/')) {
+                    videoId = selectedVideo.youtubeLink.split('/embed/')[1]?.split('?')[0];
+                  }
+                  
+                  return (
+                    <iframe
+                      src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+                      className="w-full h-full"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  );
+                }
+                // Google Drive videos
+                else if (selectedVideo.youtubeLink.includes('drive.google.com')) {
+                  const fileId = selectedVideo.youtubeLink.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1] || selectedVideo.youtubeLink.match(/[?&]id=([a-zA-Z0-9-_]+)/)?.[1];
+                  return (
+                    <iframe
+                      src={`https://drive.google.com/file/d/${fileId}/preview`}
+                      className="w-full h-full"
+                      frameBorder="0"
+                      allow="autoplay"
+                    />
+                  );
+                }
+                // Direct video files
+                else {
+                  return (
+                    <video
+                      src={selectedVideo.youtubeLink}
+                      className="w-full h-full"
+                      controls
+                      autoPlay
+                    />
+                  );
+                }
+              })()
+              }
+              
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                <h3 className="text-white text-xl font-semibold mb-2">{selectedVideo.title}</h3>
+                <p className="text-gray-300 text-sm">{selectedVideo.description}</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };
