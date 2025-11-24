@@ -161,12 +161,19 @@ const AdminPanel = ({ onLogout }) => {
       localStorage.setItem('workCategories', JSON.stringify(defaultCategories));
     }
     
-    // Load works from localStorage
-    if (activeTab === 'otherwork') {
-      const savedWorks = localStorage.getItem('otherWorks');
-      if (savedWorks) {
-        setWorks(JSON.parse(savedWorks));
+    // Load works from backend API
+    const loadWorks = async () => {
+      try {
+        const data = await ApiService.getWorks();
+        setWorks(data);
+      } catch (error) {
+        console.error('Failed to load works:', error);
+        setWorks([]);
       }
+    };
+    
+    if (activeTab === 'otherwork') {
+      loadWorks();
     }
   }, [activeTab]);
 
@@ -215,22 +222,22 @@ const AdminPanel = ({ onLogout }) => {
     }
   };
 
-  const addWork = (e) => {
+  const addWork = async (e) => {
     e.preventDefault();
-    const work = {
-      id: Date.now(),
-      ...newWork,
-      date: new Date().toISOString(),
-      image: newWork.image ? convertGoogleDriveUrl(newWork.image) : `https://via.placeholder.com/400x225/4CAF50/white?text=${encodeURIComponent(newWork.title)}`
-    };
-    
-    const existingWorks = JSON.parse(localStorage.getItem('otherWorks') || '[]');
-    const updatedWorks = [...existingWorks, work];
-    setWorks(updatedWorks);
-    localStorage.setItem('otherWorks', JSON.stringify(updatedWorks));
-    
-    setNewWork({ title: '', description: '', category: '', stats: '', image: null });
-    alert('Work added successfully!');
+    try {
+      const workData = {
+        ...newWork,
+        image: newWork.image ? convertGoogleDriveUrl(newWork.image) : `https://via.placeholder.com/400x225/4CAF50/white?text=${encodeURIComponent(newWork.title)}`
+      };
+      
+      const savedWork = await ApiService.createWork(workData);
+      setWorks([...works, savedWork]);
+      setNewWork({ title: '', description: '', category: '', stats: '', image: null });
+      alert('Work added successfully!');
+    } catch (error) {
+      console.error('Failed to add work:', error);
+      alert('Failed to add work. Please try again.');
+    }
   };
 
   const convertGoogleDriveUrl = (url) => {
@@ -454,11 +461,16 @@ const AdminPanel = ({ onLogout }) => {
     URL.revokeObjectURL(url);
   };
 
-  const deleteWork = (workId) => {
-    const updatedWorks = works.filter(w => w.id !== workId);
-    setWorks(updatedWorks);
-    localStorage.setItem('otherWorks', JSON.stringify(updatedWorks));
-    alert('Work deleted successfully!');
+  const deleteWork = async (workId) => {
+    try {
+      await ApiService.deleteWork(workId);
+      const updatedWorks = works.filter(w => w._id !== workId);
+      setWorks(updatedWorks);
+      alert('Work deleted successfully!');
+    } catch (error) {
+      console.error('Failed to delete work:', error);
+      alert('Failed to delete work. Please try again.');
+    }
   };
 
   const editWork = (work) => {
@@ -472,21 +484,26 @@ const AdminPanel = ({ onLogout }) => {
     });
   };
 
-  const updateWork = (e) => {
+  const updateWork = async (e) => {
     e.preventDefault();
-    const updatedWork = {
-      ...editingWork,
-      ...newWork,
-      image: newWork.image ? convertGoogleDriveUrl(newWork.image) : editingWork.image
-    };
-    const updatedWorks = works.map(w => 
-      w.id === editingWork.id ? updatedWork : w
-    );
-    setWorks(updatedWorks);
-    localStorage.setItem('otherWorks', JSON.stringify(updatedWorks));
-    setEditingWork(null);
-    setNewWork({ title: '', description: '', category: '', stats: '', image: null });
-    alert('Work updated successfully!');
+    try {
+      const workData = {
+        ...newWork,
+        image: newWork.image ? convertGoogleDriveUrl(newWork.image) : editingWork.image
+      };
+      
+      const updatedWork = await ApiService.updateWork(editingWork._id, workData);
+      const updatedWorks = works.map(w => 
+        w._id === editingWork._id ? updatedWork : w
+      );
+      setWorks(updatedWorks);
+      setEditingWork(null);
+      setNewWork({ title: '', description: '', category: '', stats: '', image: null });
+      alert('Work updated successfully!');
+    } catch (error) {
+      console.error('Failed to update work:', error);
+      alert('Failed to update work. Please try again.');
+    }
   };
 
   const cancelEdit = () => {
@@ -1293,7 +1310,7 @@ const AdminPanel = ({ onLogout }) => {
             ) : (
               <div className="space-y-4">
                 {works.map(work => (
-                  <div key={work.id} className="bg-gray-700 p-4 rounded">
+                  <div key={work._id || work.id} className="bg-gray-700 p-4 rounded">
                     <div className="flex justify-between items-start mb-2">
                       <div className="flex-1">
                         <h3 className="text-white font-semibold">{work.title}</h3>
@@ -1308,7 +1325,7 @@ const AdminPanel = ({ onLogout }) => {
                           Edit
                         </button>
                         <button
-                          onClick={() => deleteWork(work.id)}
+                          onClick={() => deleteWork(work._id || work.id)}
                           className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
                         >
                           Delete
@@ -1319,7 +1336,7 @@ const AdminPanel = ({ onLogout }) => {
                       <img src={work.image} alt={work.title} className="w-20 h-12 object-cover rounded mt-2" />
                     )}
                   </div>
-                ))}
+                ))
               </div>
             )
           )}

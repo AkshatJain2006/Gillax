@@ -143,6 +143,44 @@ class ApiService {
     });
     return response.json();
   }
+
+  // Works
+  async getWorks() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/works`);
+      if (!response.ok) throw new Error('Failed to fetch works');
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('API Error:', error);
+      return [];
+    }
+  }
+
+  async createWork(workData) {
+    const response = await fetch(`${API_BASE_URL}/works`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(workData)
+    });
+    return response.json();
+  }
+
+  async updateWork(id, workData) {
+    const response = await fetch(`${API_BASE_URL}/works/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(workData)
+    });
+    return response.json();
+  }
+
+  async deleteWork(id) {
+    const response = await fetch(`${API_BASE_URL}/works/${id}`, {
+      method: 'DELETE'
+    });
+    return response.json();
+  }
 }
 
 export default new ApiService();

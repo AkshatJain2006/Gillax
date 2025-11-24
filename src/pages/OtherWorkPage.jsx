@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ApiService from '../services/api';
 
 const OtherWorkPage = () => {
   const [works, setWorks] = useState([]);
@@ -9,54 +10,23 @@ const OtherWorkPage = () => {
   const [selectedWork, setSelectedWork] = useState(null);
 
   useEffect(() => {
-    // Load categories from localStorage
-    const savedCategories = localStorage.getItem('workCategories');
-    if (savedCategories) {
-      setCategories(JSON.parse(savedCategories));
-    } else {
-      const defaultCategories = ['gaming', 'education', 'branding', 'music', 'commercial', 'social'];
-      setCategories(defaultCategories);
-    }
-    
-    // Load works from localStorage or default data
-    const savedWorks = localStorage.getItem('otherWorks');
-    if (savedWorks) {
-      setWorks(JSON.parse(savedWorks));
-    } else {
-      // Default works data
-      const defaultWorks = [
-        {
-          id: 1,
-          title: "Minecraft Server Trailer",
-          description: "Epic cinematic trailer for a popular Minecraft server with custom shaders and smooth camera movements",
-          category: "gaming",
-          image: "https://via.placeholder.com/400x225/4CAF50/white?text=Minecraft+Server",
-          stats: "2M+ Views",
-          date: "2024-01-15"
-        },
-        {
-          id: 2,
-          title: "Educational Animation Series",
-          description: "Animated explainer videos for online learning platform covering complex topics in simple visuals",
-          category: "education",
-          image: "https://via.placeholder.com/400x225/2196F3/white?text=Education+Series",
-          stats: "500K+ Students",
-          date: "2024-02-10"
-        },
-        {
-          id: 3,
-          title: "Brand Identity Package",
-          description: "Complete visual identity including logo animation, brand guidelines, and marketing materials",
-          category: "branding",
-          image: "https://via.placeholder.com/400x225/FF9800/white?text=Brand+Identity",
-          stats: "15+ Brands",
-          date: "2024-01-20"
-        }
-      ];
-      setWorks(defaultWorks);
-      localStorage.setItem('otherWorks', JSON.stringify(defaultWorks));
-    }
+    loadWorks();
   }, []);
+
+  const loadWorks = async () => {
+    try {
+      const worksData = await ApiService.getWorks();
+      setWorks(worksData);
+      
+      // Extract unique categories from works
+      const uniqueCategories = [...new Set(worksData.map(work => work.category))];
+      setCategories(uniqueCategories);
+    } catch (error) {
+      console.error('Failed to load works:', error);
+      // Fallback to default categories
+      setCategories(['gaming', 'education', 'branding', 'music', 'commercial', 'social']);
+    }
+  };
 
   const categoryOptions = [
     { id: 'all', name: 'All Work' },
@@ -111,7 +81,7 @@ const OtherWorkPage = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredWorks.map((work, index) => (
             <motion.div
-              key={work.id}
+              key={work._id || work.id}
               className="premium-card rounded-2xl overflow-hidden group"
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
