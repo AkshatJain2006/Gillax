@@ -1336,7 +1336,7 @@ const AdminPanel = ({ onLogout }) => {
                       <img src={work.image} alt={work.title} className="w-20 h-12 object-cover rounded mt-2" />
                     )}
                   </div>
-                ))
+                ))}
               </div>
             )
           )}
