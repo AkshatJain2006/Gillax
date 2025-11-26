@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import ApiService from '../services/api';
+import { extractYouTubeId, isYouTubeUrl, getYouTubeThumbnailFallbacks, createImageErrorHandler } from '../utils/thumbnailUtils';
 
 const OtherWork = () => {
   const [otherProjects, setOtherProjects] = useState([]);
@@ -103,47 +104,19 @@ const OtherWork = () => {
                 {/* Thumbnail */}
                 <div className="aspect-video relative overflow-hidden">
                   {(() => {
-                    // Helper function to extract YouTube video ID
-                    const extractYouTubeId = (url) => {
-                      if (!url) return null;
-                      let videoId = '';
-                      if (url.includes('watch?v=')) {
-                        videoId = url.split('watch?v=')[1]?.split('&')[0];
-                      } else if (url.includes('youtu.be/')) {
-                        videoId = url.split('youtu.be/')[1]?.split('?')[0];
-                      } else if (url.includes('/embed/')) {
-                        videoId = url.split('/embed/')[1]?.split('?')[0];
-                      }
-                      return videoId || null;
-                    };
-
                     // Check if it's a YouTube URL and generate thumbnail
-                    if (project.image && (project.image.includes('youtube.com') || project.image.includes('youtu.be'))) {
+                    if (isYouTubeUrl(project.image)) {
                       const videoId = extractYouTubeId(project.image);
                       
                       if (videoId) {
-                        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-                        console.log(`[OtherWork ${project.title}] Loading YouTube thumbnail:`, thumbnailUrl);
+                        const fallbacks = getYouTubeThumbnailFallbacks(videoId);
+                        console.log(`[OtherWork ${project.title}] Loading YouTube thumbnail with fallbacks`);
                         return (
                           <img
-                            src={thumbnailUrl}
+                            src={fallbacks[0]}
                             alt={project.title}
                             className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                            onError={(e) => {
-                              console.warn(`[OtherWork ${project.title}] Thumbnail load failed, trying fallback...`);
-                              if (e.target.src.includes('maxresdefault')) {
-                                const hdUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                                console.log(`[OtherWork ${project.title}] Trying hqdefault:`, hdUrl);
-                                e.target.src = hdUrl;
-                              } else if (!e.target.src.includes('sddefault')) {
-                                const sdUrl = `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
-                                console.log(`[OtherWork ${project.title}] Trying sddefault:`, sdUrl);
-                                e.target.src = sdUrl;
-                              } else {
-                                console.error(`[OtherWork ${project.title}] All YouTube thumbnails failed, using placeholder`);
-                                e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
-                              }
-                            }}
+                            onError={createImageErrorHandler(videoId, project.title, fallbacks)}
                           />
                         );
                       }

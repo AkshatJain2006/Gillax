@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ApiService from '../services/api';
+import { extractYouTubeId, isYouTubeUrl, getYouTubeThumbnailFallbacks, createImageErrorHandler } from '../utils/thumbnailUtils';
 
 const Portfolio = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -115,22 +116,8 @@ const Portfolio = () => {
                   {hoveredVideo && hoveredVideo._id === project._id ? (
                     // Show video preview on hover
                     (() => {
-                      // Helper function to extract YouTube video ID
-                      const extractYouTubeId = (url) => {
-                        if (!url) return null;
-                        let videoId = '';
-                        if (url.includes('watch?v=')) {
-                          videoId = url.split('watch?v=')[1]?.split('&')[0];
-                        } else if (url.includes('youtu.be/')) {
-                          videoId = url.split('youtu.be/')[1]?.split('?')[0];
-                        } else if (url.includes('/embed/')) {
-                          videoId = url.split('/embed/')[1]?.split('?')[0];
-                        }
-                        return videoId || null;
-                      };
-
                       // YouTube videos
-                      if (project.youtubeLink && (project.youtubeLink.includes('youtube.com') || project.youtubeLink.includes('youtu.be'))) {
+                      if (isYouTubeUrl(project.youtubeLink)) {
                         const videoId = extractYouTubeId(project.youtubeLink);
                         
                         if (videoId) {
@@ -173,20 +160,6 @@ const Portfolio = () => {
                   ) : (
                     // Show thumbnail when not hovered
                     (() => {
-                      // Helper function to extract YouTube video ID
-                      const extractYouTubeId = (url) => {
-                        if (!url) return null;
-                        let videoId = '';
-                        if (url.includes('watch?v=')) {
-                          videoId = url.split('watch?v=')[1]?.split('&')[0];
-                        } else if (url.includes('youtu.be/')) {
-                          videoId = url.split('youtu.be/')[1]?.split('?')[0];
-                        } else if (url.includes('/embed/')) {
-                          videoId = url.split('/embed/')[1]?.split('?')[0];
-                        }
-                        return videoId || null;
-                      };
-
                       // Use custom thumbnail if provided
                       if (project.thumbnail) {
                         console.log(`[${project.title}] Using custom thumbnail:`, project.thumbnail);
@@ -203,33 +176,17 @@ const Portfolio = () => {
                         );
                       }
                       // Check if it's a YouTube URL
-                      else if (project.youtubeLink && (project.youtubeLink.includes('youtube.com') || project.youtubeLink.includes('youtu.be'))) {
+                      else if (isYouTubeUrl(project.youtubeLink)) {
                         const videoId = extractYouTubeId(project.youtubeLink);
-                        console.log(`[${project.title}] YouTube URL detected, extracted ID:`, videoId);
                         
                         if (videoId) {
-                          const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-                          console.log(`[${project.title}] Loading YouTube thumbnail:`, thumbnailUrl);
+                          const fallbacks = getYouTubeThumbnailFallbacks(videoId);
                           return (
                             <img
-                              src={thumbnailUrl}
+                              src={fallbacks[0]}
                               alt={project.title}
                               className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                              onError={(e) => {
-                                console.warn(`[${project.title}] Thumbnail load failed, trying fallback...`);
-                                if (e.target.src.includes('maxresdefault')) {
-                                  const hdUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                                  console.log(`[${project.title}] Trying hqdefault:`, hdUrl);
-                                  e.target.src = hdUrl;
-                                } else if (!e.target.src.includes('sddefault')) {
-                                  const sdUrl = `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
-                                  console.log(`[${project.title}] Trying sddefault:`, sdUrl);
-                                  e.target.src = sdUrl;
-                                } else {
-                                  console.error(`[${project.title}] All YouTube thumbnails failed, using placeholder`);
-                                  e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
-                                }
-                              }}
+                              onError={createImageErrorHandler(videoId, project.title, fallbacks)}
                             />
                           );
                         }

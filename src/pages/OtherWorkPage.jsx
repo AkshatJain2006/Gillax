@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ApiService from '../services/api';
+import { extractYouTubeId, isYouTubeUrl, getYouTubeThumbnailFallbacks, createImageErrorHandler } from '../utils/thumbnailUtils';
 
 const OtherWorkPage = () => {
   const [works, setWorks] = useState([]);
@@ -118,28 +119,14 @@ const OtherWorkPage = () => {
                     const videoId = extractYouTubeId(work.image);
                     
                     if (videoId) {
-                      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-                      console.log(`[OtherWorkPage ${work.title}] Loading YouTube thumbnail:`, thumbnailUrl);
+                      const fallbacks = getYouTubeThumbnailFallbacks(videoId);
+                      console.log(`[OtherWorkPage ${work.title}] Loading YouTube thumbnail with fallbacks`);
                       return (
                         <img
-                          src={thumbnailUrl}
+                          src={fallbacks[0]}
                           alt={work.title}
                           className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                          onError={(e) => {
-                            console.warn(`[OtherWorkPage ${work.title}] Thumbnail load failed, trying fallback...`);
-                            if (e.target.src.includes('maxresdefault')) {
-                              const hdUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                              console.log(`[OtherWorkPage ${work.title}] Trying hqdefault:`, hdUrl);
-                              e.target.src = hdUrl;
-                            } else if (!e.target.src.includes('sddefault')) {
-                              const sdUrl = `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
-                              console.log(`[OtherWorkPage ${work.title}] Trying sddefault:`, sdUrl);
-                              e.target.src = sdUrl;
-                            } else {
-                              console.error(`[OtherWorkPage ${work.title}] All YouTube thumbnails failed, using placeholder`);
-                              e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(work.title)}`;
-                            }
-                          }}
+                          onError={createImageErrorHandler(videoId, work.title, fallbacks)}
                         />
                       );
                     }
