@@ -18,7 +18,7 @@ const Portfolio = () => {
       } catch (error) {
         console.error('Failed to load projects:', error);
         // Fallback to default projects if API fails
-        setProjects([
+        setProjects([ 
           {
             _id: 1,
             title: "Gaming Montage",
@@ -115,28 +115,37 @@ const Portfolio = () => {
                   {hoveredVideo && hoveredVideo._id === project._id ? (
                     // Show video preview on hover
                     (() => {
-                      // YouTube videos
-                      if (project.youtubeLink.includes('youtube.com') || project.youtubeLink.includes('youtu.be')) {
+                      // Helper function to extract YouTube video ID
+                      const extractYouTubeId = (url) => {
+                        if (!url) return null;
                         let videoId = '';
-                        if (project.youtubeLink.includes('watch?v=')) {
-                          videoId = project.youtubeLink.split('watch?v=')[1]?.split('&')[0];
-                        } else if (project.youtubeLink.includes('youtu.be/')) {
-                          videoId = project.youtubeLink.split('youtu.be/')[1]?.split('?')[0];
-                        } else if (project.youtubeLink.includes('/embed/')) {
-                          videoId = project.youtubeLink.split('/embed/')[1]?.split('?')[0];
+                        if (url.includes('watch?v=')) {
+                          videoId = url.split('watch?v=')[1]?.split('&')[0];
+                        } else if (url.includes('youtu.be/')) {
+                          videoId = url.split('youtu.be/')[1]?.split('?')[0];
+                        } else if (url.includes('/embed/')) {
+                          videoId = url.split('/embed/')[1]?.split('?')[0];
                         }
+                        return videoId || null;
+                      };
+
+                      // YouTube videos
+                      if (project.youtubeLink && (project.youtubeLink.includes('youtube.com') || project.youtubeLink.includes('youtu.be'))) {
+                        const videoId = extractYouTubeId(project.youtubeLink);
                         
-                        return (
-                          <iframe
-                            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}`}
-                            className="w-full h-full"
-                            frameBorder="0"
-                            allow="autoplay; encrypted-media"
-                          />
-                        );
+                        if (videoId) {
+                          return (
+                            <iframe
+                              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&loop=1&playlist=${videoId}`}
+                              className="w-full h-full"
+                              frameBorder="0"
+                              allow="autoplay; encrypted-media"
+                            />
+                          );
+                        }
                       }
                       // Google Drive videos
-                      else if (project.youtubeLink.includes('drive.google.com')) {
+                      else if (project.youtubeLink && project.youtubeLink.includes('drive.google.com')) {
                         const fileId = project.youtubeLink.match(/\/d\/([a-zA-Z0-9-_]+)/)?.[1] || project.youtubeLink.match(/[?&]id=([a-zA-Z0-9-_]+)/)?.[1];
                         return (
                           <video
@@ -164,41 +173,60 @@ const Portfolio = () => {
                   ) : (
                     // Show thumbnail when not hovered
                     (() => {
+                      // Helper function to extract YouTube video ID
+                      const extractYouTubeId = (url) => {
+                        if (!url) return null;
+                        let videoId = '';
+                        if (url.includes('watch?v=')) {
+                          videoId = url.split('watch?v=')[1]?.split('&')[0];
+                        } else if (url.includes('youtu.be/')) {
+                          videoId = url.split('youtu.be/')[1]?.split('?')[0];
+                        } else if (url.includes('/embed/')) {
+                          videoId = url.split('/embed/')[1]?.split('?')[0];
+                        }
+                        return videoId || null;
+                      };
+
                       // Use custom thumbnail if provided
                       if (project.thumbnail) {
+                        console.log(`[${project.title}] Using custom thumbnail:`, project.thumbnail);
                         return (
                           <img
                             src={project.thumbnail}
                             alt={project.title}
                             className="w-full h-full object-cover transition-transform group-hover:scale-105"
                             onError={(e) => {
+                              console.error(`[${project.title}] Custom thumbnail failed to load`);
                               e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
                             }}
                           />
                         );
                       }
                       // Check if it's a YouTube URL
-                      else if (project.youtubeLink.includes('youtube.com') || project.youtubeLink.includes('youtu.be')) {
-                        let videoId = '';
-                        
-                        if (project.youtubeLink.includes('watch?v=')) {
-                          videoId = project.youtubeLink.split('watch?v=')[1]?.split('&')[0];
-                        } else if (project.youtubeLink.includes('youtu.be/')) {
-                          videoId = project.youtubeLink.split('youtu.be/')[1]?.split('?')[0];
-                        } else if (project.youtubeLink.includes('/embed/')) {
-                          videoId = project.youtubeLink.split('/embed/')[1]?.split('?')[0];
-                        }
+                      else if (project.youtubeLink && (project.youtubeLink.includes('youtube.com') || project.youtubeLink.includes('youtu.be'))) {
+                        const videoId = extractYouTubeId(project.youtubeLink);
+                        console.log(`[${project.title}] YouTube URL detected, extracted ID:`, videoId);
                         
                         if (videoId) {
+                          const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+                          console.log(`[${project.title}] Loading YouTube thumbnail:`, thumbnailUrl);
                           return (
                             <img
-                              src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                              src={thumbnailUrl}
                               alt={project.title}
                               className="w-full h-full object-cover transition-transform group-hover:scale-105"
                               onError={(e) => {
+                                console.warn(`[${project.title}] Thumbnail load failed, trying fallback...`);
                                 if (e.target.src.includes('maxresdefault')) {
-                                  e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                  const hdUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                  console.log(`[${project.title}] Trying hqdefault:`, hdUrl);
+                                  e.target.src = hdUrl;
+                                } else if (!e.target.src.includes('sddefault')) {
+                                  const sdUrl = `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
+                                  console.log(`[${project.title}] Trying sddefault:`, sdUrl);
+                                  e.target.src = sdUrl;
                                 } else {
+                                  console.error(`[${project.title}] All YouTube thumbnails failed, using placeholder`);
                                   e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
                                 }
                               }}
@@ -296,26 +324,35 @@ const Portfolio = () => {
               </button>
               
               {(() => {
-                // YouTube videos
-                if (selectedVideo.youtubeLink.includes('youtube.com') || selectedVideo.youtubeLink.includes('youtu.be')) {
+                // Helper function to extract YouTube video ID
+                const extractYouTubeId = (url) => {
+                  if (!url) return null;
                   let videoId = '';
-                  if (selectedVideo.youtubeLink.includes('watch?v=')) {
-                    videoId = selectedVideo.youtubeLink.split('watch?v=')[1]?.split('&')[0];
-                  } else if (selectedVideo.youtubeLink.includes('youtu.be/')) {
-                    videoId = selectedVideo.youtubeLink.split('youtu.be/')[1]?.split('?')[0];
-                  } else if (selectedVideo.youtubeLink.includes('/embed/')) {
-                    videoId = selectedVideo.youtubeLink.split('/embed/')[1]?.split('?')[0];
+                  if (url.includes('watch?v=')) {
+                    videoId = url.split('watch?v=')[1]?.split('&')[0];
+                  } else if (url.includes('youtu.be/')) {
+                    videoId = url.split('youtu.be/')[1]?.split('?')[0];
+                  } else if (url.includes('/embed/')) {
+                    videoId = url.split('/embed/')[1]?.split('?')[0];
                   }
+                  return videoId || null;
+                };
+
+                // YouTube videos
+                if (selectedVideo.youtubeLink && (selectedVideo.youtubeLink.includes('youtube.com') || selectedVideo.youtubeLink.includes('youtu.be'))) {
+                  const videoId = extractYouTubeId(selectedVideo.youtubeLink);
                   
-                  return (
-                    <iframe
-                      src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
-                      className="w-full h-full"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  );
+                  if (videoId) {
+                    return (
+                      <iframe
+                        src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+                        className="w-full h-full"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    );
+                  }
                 }
                 // Google Drive videos
                 else if (selectedVideo.youtubeLink.includes('drive.google.com')) {

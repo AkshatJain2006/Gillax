@@ -99,29 +99,44 @@ const OtherWorkPage = () => {
                 }}
               >
                 {(() => {
+                  // Helper function to extract YouTube video ID
+                  const extractYouTubeId = (url) => {
+                    if (!url) return null;
+                    let videoId = '';
+                    if (url.includes('watch?v=')) {
+                      videoId = url.split('watch?v=')[1]?.split('&')[0];
+                    } else if (url.includes('youtu.be/')) {
+                      videoId = url.split('youtu.be/')[1]?.split('?')[0];
+                    } else if (url.includes('/embed/')) {
+                      videoId = url.split('/embed/')[1]?.split('?')[0];
+                    }
+                    return videoId || null;
+                  };
+
                   // Check if it's a YouTube URL and generate thumbnail
                   if (work.image && (work.image.includes('youtube.com') || work.image.includes('youtu.be'))) {
-                    let videoId = '';
-                    if (work.image.includes('watch?v=')) {
-                      videoId = work.image.split('watch?v=')[1]?.split('&')[0];
-                    } else if (work.image.includes('youtu.be/')) {
-                      videoId = work.image.split('youtu.be/')[1]?.split('?')[0];
-                    } else if (work.image.includes('/embed/')) {
-                      videoId = work.image.split('/embed/')[1]?.split('?')[0];
-                    }
+                    const videoId = extractYouTubeId(work.image);
                     
                     if (videoId) {
+                      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+                      console.log(`[OtherWorkPage ${work.title}] Loading YouTube thumbnail:`, thumbnailUrl);
                       return (
                         <img
-                          src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                          src={thumbnailUrl}
                           alt={work.title}
                           className="w-full h-full object-cover transition-transform group-hover:scale-110"
                           onError={(e) => {
+                            console.warn(`[OtherWorkPage ${work.title}] Thumbnail load failed, trying fallback...`);
                             if (e.target.src.includes('maxresdefault')) {
-                              e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                              const hdUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                              console.log(`[OtherWorkPage ${work.title}] Trying hqdefault:`, hdUrl);
+                              e.target.src = hdUrl;
                             } else if (!e.target.src.includes('sddefault')) {
-                              e.target.src = `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
+                              const sdUrl = `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
+                              console.log(`[OtherWorkPage ${work.title}] Trying sddefault:`, sdUrl);
+                              e.target.src = sdUrl;
                             } else {
+                              console.error(`[OtherWorkPage ${work.title}] All YouTube thumbnails failed, using placeholder`);
                               e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(work.title)}`;
                             }
                           }}
@@ -132,12 +147,14 @@ const OtherWorkPage = () => {
                   
                   // Use custom thumbnail if provided, otherwise use image
                   const thumbnailSrc = work.thumbnail || work.image;
+                  console.log(`[OtherWorkPage ${work.title}] Using image:`, thumbnailSrc);
                   return (
                     <img 
                       src={thumbnailSrc} 
                       alt={work.title}
                       className="w-full h-full object-cover transition-transform group-hover:scale-110"
                       onError={(e) => {
+                        console.error(`[OtherWorkPage ${work.title}] Image load failed, using placeholder`);
                         e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(work.title)}`;
                       }}
                     />

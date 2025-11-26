@@ -103,29 +103,44 @@ const OtherWork = () => {
                 {/* Thumbnail */}
                 <div className="aspect-video relative overflow-hidden">
                   {(() => {
+                    // Helper function to extract YouTube video ID
+                    const extractYouTubeId = (url) => {
+                      if (!url) return null;
+                      let videoId = '';
+                      if (url.includes('watch?v=')) {
+                        videoId = url.split('watch?v=')[1]?.split('&')[0];
+                      } else if (url.includes('youtu.be/')) {
+                        videoId = url.split('youtu.be/')[1]?.split('?')[0];
+                      } else if (url.includes('/embed/')) {
+                        videoId = url.split('/embed/')[1]?.split('?')[0];
+                      }
+                      return videoId || null;
+                    };
+
                     // Check if it's a YouTube URL and generate thumbnail
                     if (project.image && (project.image.includes('youtube.com') || project.image.includes('youtu.be'))) {
-                      let videoId = '';
-                      if (project.image.includes('watch?v=')) {
-                        videoId = project.image.split('watch?v=')[1]?.split('&')[0];
-                      } else if (project.image.includes('youtu.be/')) {
-                        videoId = project.image.split('youtu.be/')[1]?.split('?')[0];
-                      } else if (project.image.includes('/embed/')) {
-                        videoId = project.image.split('/embed/')[1]?.split('?')[0];
-                      }
+                      const videoId = extractYouTubeId(project.image);
                       
                       if (videoId) {
+                        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+                        console.log(`[OtherWork ${project.title}] Loading YouTube thumbnail:`, thumbnailUrl);
                         return (
                           <img
-                            src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                            src={thumbnailUrl}
                             alt={project.title}
                             className="w-full h-full object-cover transition-transform group-hover:scale-110"
                             onError={(e) => {
+                              console.warn(`[OtherWork ${project.title}] Thumbnail load failed, trying fallback...`);
                               if (e.target.src.includes('maxresdefault')) {
-                                e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                const hdUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                                console.log(`[OtherWork ${project.title}] Trying hqdefault:`, hdUrl);
+                                e.target.src = hdUrl;
                               } else if (!e.target.src.includes('sddefault')) {
-                                e.target.src = `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
+                                const sdUrl = `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
+                                console.log(`[OtherWork ${project.title}] Trying sddefault:`, sdUrl);
+                                e.target.src = sdUrl;
                               } else {
+                                console.error(`[OtherWork ${project.title}] All YouTube thumbnails failed, using placeholder`);
                                 e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
                               }
                             }}
@@ -136,12 +151,14 @@ const OtherWork = () => {
                     
                     // Use custom thumbnail if provided, otherwise use image
                     const thumbnailSrc = project.thumbnail || project.image;
+                    console.log(`[OtherWork ${project.title}] Using image:`, thumbnailSrc);
                     return (
                       <img 
                         src={thumbnailSrc} 
                         alt={project.title}
                         className="w-full h-full object-cover transition-transform group-hover:scale-110"
                         onError={(e) => {
+                          console.error(`[OtherWork ${project.title}] Image load failed, using placeholder`);
                           e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
                         }}
                       />
