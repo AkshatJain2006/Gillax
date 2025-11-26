@@ -17,7 +17,12 @@ export const extractYouTubeId = (url) => {
   let videoId = '';
 
   // Handle standard watch URL format
-  if (url.includes('watch?v=')) {
+    // Handle YouTube Shorts format (10 char IDs)
+    if (url.includes('/shorts/')) {
+      videoId = url.split('/shorts/')[1]?.split('?')[0]?.split('#')[0];
+    }
+    // Handle standard watch URL format
+    else if (url.includes('watch?v=')) {
     videoId = url.split('watch?v=')[1]?.split('&')[0]?.split('#')[0];
   }
   // Handle shortened youtu.be format
@@ -30,7 +35,8 @@ export const extractYouTubeId = (url) => {
   }
 
   // Validate video ID (should be 11 characters alphanumeric, dash, underscore)
-  if (videoId && /^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+  // YouTube Shorts use 10 chars, regular videos use 11 chars
+  if (videoId && /^[a-zA-Z0-9_-]{10,11}$/.test(videoId)) {
     console.log('[ThumbnailUtils] Successfully extracted video ID:', videoId);
     return videoId;
   }
