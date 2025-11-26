@@ -72,9 +72,10 @@ export const getYouTubeThumbnailUrl = (videoId, quality = 'maxres') => {
  * @returns {string[]} - Array of thumbnail URLs in priority order
  */
 export const getYouTubeThumbnailFallbacks = (videoId) => {
+  // Prefer hqdefault first (most commonly available), then maxres, then fallbacks
   return [
-    getYouTubeThumbnailUrl(videoId, 'maxres'),
     getYouTubeThumbnailUrl(videoId, 'hq'),
+    getYouTubeThumbnailUrl(videoId, 'maxres'),
     getYouTubeThumbnailUrl(videoId, 'sd'),
     getYouTubeThumbnailUrl(videoId, 'mq'),
     getYouTubeThumbnailUrl(videoId, 'default')

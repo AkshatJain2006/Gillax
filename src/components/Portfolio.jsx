@@ -160,25 +160,27 @@ const Portfolio = () => {
                   ) : (
                     // Show thumbnail when not hovered
                     (() => {
-                      // Use custom thumbnail if provided
-                      if (project.thumbnail) {
-                        console.log(`[${project.title}] Using custom thumbnail:`, project.thumbnail);
+                      // Prefer explicit thumbnail, then computedThumbnail from API
+                      const thumbnailSrc = project.thumbnail || project.computedThumbnail;
+                      if (thumbnailSrc) {
+                        console.log(`[${project.title}] Using thumbnail:`, thumbnailSrc);
                         return (
                           <img
-                            src={project.thumbnail}
+                            src={thumbnailSrc}
                             alt={project.title}
                             className="w-full h-full object-cover transition-transform group-hover:scale-105"
                             onError={(e) => {
-                              console.error(`[${project.title}] Custom thumbnail failed to load`);
+                              console.error(`[${project.title}] Thumbnail failed to load, falling back`);
                               e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
                             }}
                           />
                         );
                       }
-                      // Check if it's a YouTube URL
+
+                      // If no thumbnail provided, try to generate from YouTube link
                       else if (isYouTubeUrl(project.youtubeLink)) {
                         const videoId = extractYouTubeId(project.youtubeLink);
-                        
+
                         if (videoId) {
                           const fallbacks = getYouTubeThumbnailFallbacks(videoId);
                           return (
