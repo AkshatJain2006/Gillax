@@ -5,6 +5,7 @@ const projectSchema = new mongoose.Schema({
   description: { type: String, required: true },
   youtubeLink: { type: String, required: true },
   category: { type: String, required: true },
+  thumbnail: { type: String, default: null },
   featured: { type: Boolean, default: false }
 }, {
   timestamps: true

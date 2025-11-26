@@ -106,6 +106,8 @@ const OtherWorkPage = () => {
                       videoId = work.image.split('watch?v=')[1]?.split('&')[0];
                     } else if (work.image.includes('youtu.be/')) {
                       videoId = work.image.split('youtu.be/')[1]?.split('?')[0];
+                    } else if (work.image.includes('/embed/')) {
+                      videoId = work.image.split('/embed/')[1]?.split('?')[0];
                     }
                     
                     if (videoId) {
@@ -117,6 +119,8 @@ const OtherWorkPage = () => {
                           onError={(e) => {
                             if (e.target.src.includes('maxresdefault')) {
                               e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                            } else if (!e.target.src.includes('sddefault')) {
+                              e.target.src = `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
                             } else {
                               e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(work.title)}`;
                             }
@@ -126,10 +130,11 @@ const OtherWorkPage = () => {
                     }
                   }
                   
-                  // Default image display
+                  // Use custom thumbnail if provided, otherwise use image
+                  const thumbnailSrc = work.thumbnail || work.image;
                   return (
                     <img 
-                      src={work.image} 
+                      src={thumbnailSrc} 
                       alt={work.title}
                       className="w-full h-full object-cover transition-transform group-hover:scale-110"
                       onError={(e) => {

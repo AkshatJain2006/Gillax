@@ -1,51 +1,71 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import ApiService from '../services/api';
 
 const OtherWork = () => {
-  const otherProjects = [
-    {
-      title: "Minecraft Server Trailer",
-      description: "Epic cinematic trailer for a popular Minecraft server with custom shaders and smooth camera movements",
-      category: "Gaming",
-      thumbnail: "https://via.placeholder.com/400x225/4CAF50/white?text=Minecraft+Server",
-      stats: "2M+ Views"
-    },
-    {
-      title: "Educational Animation Series",
-      description: "Animated explainer videos for online learning platform covering complex topics in simple visuals",
-      category: "Education",
-      thumbnail: "https://via.placeholder.com/400x225/2196F3/white?text=Education+Series",
-      stats: "500K+ Students"
-    },
-    {
-      title: "Brand Identity Package",
-      description: "Complete visual identity including logo animation, brand guidelines, and marketing materials",
-      category: "Branding",
-      thumbnail: "https://via.placeholder.com/400x225/FF9800/white?text=Brand+Identity",
-      stats: "15+ Brands"
-    },
-    {
-      title: "Music Video Production",
-      description: "High-energy music video with synchronized effects, color grading, and creative transitions",
-      category: "Music",
-      thumbnail: "https://via.placeholder.com/400x225/E91E63/white?text=Music+Video",
-      stats: "1M+ Streams"
-    },
-    {
-      title: "Product Demo Videos",
-      description: "Professional product showcases with 3D animations and detailed feature explanations",
-      category: "Commercial",
-      thumbnail: "https://via.placeholder.com/400x225/9C27B0/white?text=Product+Demo",
-      stats: "50+ Products"
-    },
-    {
-      title: "Social Media Content",
-      description: "Viral-ready short-form content optimized for Instagram Reels, TikTok, and YouTube Shorts",
-      category: "Social Media",
-      thumbnail: "https://via.placeholder.com/400x225/00BCD4/white?text=Social+Content",
-      stats: "10M+ Reach"
-    }
-  ];
+  const [otherProjects, setOtherProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadWorks = async () => {
+      try {
+        const data = await ApiService.getWorks();
+        // Limit to 6 items for the component display
+        setOtherProjects(data.slice(0, 6));
+      } catch (error) {
+        console.error('Failed to load works:', error);
+        // Fallback to default projects
+        setOtherProjects([
+          {
+            title: "Minecraft Server Trailer",
+            description: "Epic cinematic trailer for a popular Minecraft server with custom shaders and smooth camera movements",
+            category: "Gaming",
+            image: "https://via.placeholder.com/400x225/4CAF50/white?text=Minecraft+Server",
+            stats: "2M+ Views"
+          },
+          {
+            title: "Educational Animation Series",
+            description: "Animated explainer videos for online learning platform covering complex topics in simple visuals",
+            category: "Education",
+            image: "https://via.placeholder.com/400x225/2196F3/white?text=Education+Series",
+            stats: "500K+ Students"
+          },
+          {
+            title: "Brand Identity Package",
+            description: "Complete visual identity including logo animation, brand guidelines, and marketing materials",
+            category: "Branding",
+            image: "https://via.placeholder.com/400x225/FF9800/white?text=Brand+Identity",
+            stats: "15+ Brands"
+          },
+          {
+            title: "Music Video Production",
+            description: "High-energy music video with synchronized effects, color grading, and creative transitions",
+            category: "Music",
+            image: "https://via.placeholder.com/400x225/E91E63/white?text=Music+Video",
+            stats: "1M+ Streams"
+          },
+          {
+            title: "Product Demo Videos",
+            description: "Professional product showcases with 3D animations and detailed feature explanations",
+            category: "Commercial",
+            image: "https://via.placeholder.com/400x225/9C27B0/white?text=Product+Demo",
+            stats: "50+ Products"
+          },
+          {
+            title: "Social Media Content",
+            description: "Viral-ready short-form content optimized for Instagram Reels, TikTok, and YouTube Shorts",
+            category: "Social Media",
+            image: "https://via.placeholder.com/400x225/00BCD4/white?text=Social+Content",
+            stats: "10M+ Reach"
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadWorks();
+  }, []);
 
   return (
     <section className="py-20 px-8 bg-black">
@@ -67,35 +87,78 @@ const OtherWork = () => {
           Diverse projects across multiple industries and platforms
         </motion.p>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {otherProjects.map((project, index) => (
-            <motion.div
-              key={index}
-              className="premium-card rounded-2xl overflow-hidden group"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.03, y: -5 }}
-            >
-              {/* Thumbnail */}
-              <div className="aspect-video relative overflow-hidden">
-                <img 
-                  src={project.thumbnail} 
-                  alt={project.title}
-                  className="w-full h-full object-cover transition-transform group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                
-                {/* Category Badge */}
-                <div className="absolute top-4 left-4 px-3 py-1 bg-blue-500/80 backdrop-blur-sm rounded-full text-white text-sm font-medium">
-                  {project.category}
+        {loading ? (
+          <div className="text-center text-gray-400">Loading projects...</div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {otherProjects.map((project, index) => (
+              <motion.div
+                key={index}
+                className="premium-card rounded-2xl overflow-hidden group"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ scale: 1.03, y: -5 }}
+              >
+                {/* Thumbnail */}
+                <div className="aspect-video relative overflow-hidden">
+                  {(() => {
+                    // Check if it's a YouTube URL and generate thumbnail
+                    if (project.image && (project.image.includes('youtube.com') || project.image.includes('youtu.be'))) {
+                      let videoId = '';
+                      if (project.image.includes('watch?v=')) {
+                        videoId = project.image.split('watch?v=')[1]?.split('&')[0];
+                      } else if (project.image.includes('youtu.be/')) {
+                        videoId = project.image.split('youtu.be/')[1]?.split('?')[0];
+                      } else if (project.image.includes('/embed/')) {
+                        videoId = project.image.split('/embed/')[1]?.split('?')[0];
+                      }
+                      
+                      if (videoId) {
+                        return (
+                          <img
+                            src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                            alt={project.title}
+                            className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                            onError={(e) => {
+                              if (e.target.src.includes('maxresdefault')) {
+                                e.target.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                              } else if (!e.target.src.includes('sddefault')) {
+                                e.target.src = `https://img.youtube.com/vi/${videoId}/sddefault.jpg`;
+                              } else {
+                                e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
+                              }
+                            }}
+                          />
+                        );
+                      }
+                    }
+                    
+                    // Use custom thumbnail if provided, otherwise use image
+                    const thumbnailSrc = project.thumbnail || project.image;
+                    return (
+                      <img 
+                        src={thumbnailSrc} 
+                        alt={project.title}
+                        className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                        onError={(e) => {
+                          e.target.src = `https://via.placeholder.com/800x450/1f2937/ffffff?text=${encodeURIComponent(project.title)}`;
+                        }}
+                      />
+                    );
+                  })()}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  
+                  {/* Category Badge */}
+                  <div className="absolute top-4 left-4 px-3 py-1 bg-blue-500/80 backdrop-blur-sm rounded-full text-white text-sm font-medium">
+                    {project.category}
+                  </div>
+                  
+                  {/* Stats Badge */}
+                  <div className="absolute bottom-4 right-4 px-3 py-1 bg-black/80 backdrop-blur-sm rounded-full text-blue-400 text-sm font-medium">
+                    {project.stats}
+                  </div>
                 </div>
-                
-                {/* Stats Badge */}
-                <div className="absolute bottom-4 right-4 px-3 py-1 bg-black/80 backdrop-blur-sm rounded-full text-blue-400 text-sm font-medium">
-                  {project.stats}
-                </div>
-              </div>
               
               {/* Content */}
               <div className="p-6">
@@ -108,7 +171,8 @@ const OtherWork = () => {
               </div>
             </motion.div>
           ))}
-        </div>
+          </div>
+        )}
 
         {/* Call to Action */}
         <motion.div
