@@ -43,19 +43,22 @@ const ContactPage = () => {
       label: 'WhatsApp', 
       action: () => window.open('https://wa.me/919646028153?text=Hi! I\'m interested in your video editing services.', '_blank'),
       icon: '💬',
-      color: 'bg-green-500'
+      gradient: 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
+      shadow: 'shadow-green-500/25'
     },
     { 
       label: 'Email', 
       action: () => window.open('mailto:gillaxediting@gmail.com?subject=Video Editing Inquiry', '_blank'),
       icon: '📧',
-      color: 'bg-blue-500'
+      gradient: 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
+      shadow: 'shadow-blue-500/25'
     },
     { 
       label: 'Instagram', 
-      action: () => window.open('https://instagram.com/gilla_x', '_blank'),
+      action: () => window.open('https://www.instagram.com/gilla_edit/reels/', '_blank'),
       icon: '📸',
-      color: 'bg-pink-500'
+      gradient: 'from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700',
+      shadow: 'shadow-pink-500/25'
     }
   ];
 
@@ -97,12 +100,15 @@ const ContactPage = () => {
             <motion.button
               key={action.label}
               onClick={action.action}
-              className={`${action.color} hover:scale-105 transition-all duration-200 px-6 py-3 rounded-full text-white font-medium flex items-center space-x-2 shadow-lg`}
+              className={`bg-gradient-to-r ${action.gradient} ${action.shadow} shadow-lg hover:shadow-xl transition-all duration-300 px-8 py-4 rounded-full text-white font-semibold flex items-center space-x-3 backdrop-blur-sm border border-white/10 hover:border-white/20 transform hover:-translate-y-1`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 + index * 0.1 }}
             >
-              <span className="text-lg">{action.icon}</span>
-              <span>{action.label}</span>
+              <span className="text-xl">{action.icon}</span>
+              <span className="text-base">{action.label}</span>
             </motion.button>
           ))}
         </motion.div>

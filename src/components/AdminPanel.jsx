@@ -596,22 +596,22 @@ const AdminPanel = ({ onLogout }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 p-8">
+    <div className="min-h-screen bg-gray-900 p-4 sm:p-8">
       <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-            <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
             <button
               onClick={() => window.location.href = '/'}
-              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors flex items-center space-x-2"
+              className="px-3 py-2 sm:px-4 sm:py-2 bg-gray-700 text-white rounded hover:bg-gray-600 transition-colors flex items-center space-x-2 text-sm sm:text-base"
             >
               <span>←</span>
               <span>Back to Site</span>
             </button>
-            <h1 className="text-3xl font-bold text-white">Admin Panel</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">Admin Panel</h1>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
             {currentUser && (
-              <div className="text-white">
+              <div className="text-white text-sm sm:text-base">
                 <span className="text-gray-400">Welcome, </span>
                 <span className="font-semibold">{currentUser.username}</span>
                 <span className={`ml-2 px-2 py-1 rounded text-xs ${
@@ -624,7 +624,7 @@ const AdminPanel = ({ onLogout }) => {
             )}
             <button
               onClick={handleLogout}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+              className="px-3 py-2 sm:px-4 sm:py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm sm:text-base w-full sm:w-auto"
             >
               Logout
             </button>
@@ -632,28 +632,28 @@ const AdminPanel = ({ onLogout }) => {
         </div>
         
         {/* Tab Navigation */}
-        <div className="flex space-x-4 mb-8">
+        <div className="flex flex-wrap gap-2 sm:gap-4 mb-6 sm:mb-8">
           <button
             onClick={() => setActiveTab('portfolio')}
-            className={`px-6 py-3 rounded ${activeTab === 'portfolio' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
+            className={`px-3 py-2 sm:px-6 sm:py-3 rounded text-sm sm:text-base ${activeTab === 'portfolio' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
           >
             Portfolio
           </button>
           <button
             onClick={() => setActiveTab('otherwork')}
-            className={`px-6 py-3 rounded ${activeTab === 'otherwork' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
+            className={`px-3 py-2 sm:px-6 sm:py-3 rounded text-sm sm:text-base ${activeTab === 'otherwork' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
           >
             Other Work
           </button>
           <button
             onClick={() => setActiveTab('reviews')}
-            className={`px-6 py-3 rounded ${activeTab === 'reviews' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
+            className={`px-3 py-2 sm:px-6 sm:py-3 rounded text-sm sm:text-base ${activeTab === 'reviews' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
           >
             Reviews
           </button>
           <button
             onClick={() => setActiveTab('messages')}
-            className={`px-6 py-3 rounded relative ${activeTab === 'messages' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
+            className={`px-3 py-2 sm:px-6 sm:py-3 rounded relative text-sm sm:text-base ${activeTab === 'messages' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
           >
             Messages
             {contacts.filter(c => !c.seen).length > 0 && (
@@ -664,14 +664,14 @@ const AdminPanel = ({ onLogout }) => {
           </button>
           <button
             onClick={() => setActiveTab('packages')}
-            className={`px-6 py-3 rounded ${activeTab === 'packages' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
+            className={`px-3 py-2 sm:px-6 sm:py-3 rounded text-sm sm:text-base ${activeTab === 'packages' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
           >
             Packages
           </button>
           {currentUser?.role === 'admin' && (
             <button
               onClick={() => setActiveTab('users')}
-              className={`px-6 py-3 rounded ${activeTab === 'users' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
+              className={`px-3 py-2 sm:px-6 sm:py-3 rounded text-sm sm:text-base ${activeTab === 'users' ? 'bg-primary text-white' : 'bg-gray-700 text-gray-300'}`}
             >
               Users
             </button>
@@ -679,15 +679,15 @@ const AdminPanel = ({ onLogout }) => {
         </div>
         
         {activeTab === 'portfolio' && (
-        <div className="bg-gray-800 p-6 rounded-lg mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-white">
+        <div className="bg-gray-800 p-4 sm:p-6 rounded-lg mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
+            <h2 className="text-lg sm:text-xl font-semibold text-white">
               {editingProject ? 'Edit Project' : 'Add New Project'}
             </h2>
             {!editingProject && (
               <button
                 onClick={() => setShowBulkUpload(!showBulkUpload)}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                className="px-3 py-2 sm:px-4 sm:py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm w-full sm:w-auto"
               >
                 {showBulkUpload ? 'Single Upload' : 'Bulk Upload'}
               </button>
@@ -783,10 +783,10 @@ const AdminPanel = ({ onLogout }) => {
               <option value="motion">Motion Graphics</option>
               <option value="3d">3D Animation</option>
             </select>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <button
                 type="submit"
-                className="px-6 py-3 bg-primary text-white rounded hover:bg-secondary"
+                className="px-4 py-2 sm:px-6 sm:py-3 bg-primary text-white rounded hover:bg-secondary text-sm sm:text-base"
               >
                 {editingProject ? 'Update Project' : 'Add Project'}
               </button>
@@ -794,7 +794,7 @@ const AdminPanel = ({ onLogout }) => {
                 <button
                   type="button"
                   onClick={cancelProjectEdit}
-                  className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700"
+                  className="px-4 py-2 sm:px-6 sm:py-3 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm sm:text-base"
                 >
                   Cancel
                 </button>
@@ -806,8 +806,8 @@ const AdminPanel = ({ onLogout }) => {
         )}
         
         {activeTab === 'otherwork' && (
-        <div className="bg-gray-800 p-6 rounded-lg mb-8">
-          <h2 className="text-xl font-semibold text-white mb-4">
+        <div className="bg-gray-800 p-4 sm:p-6 rounded-lg mb-6 sm:mb-8">
+          <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">
             {editingWork ? 'Edit Work' : 'Add New Work'}
           </h2>
           <form onSubmit={editingWork ? updateWork : addWork} className="space-y-4">
@@ -861,7 +861,7 @@ const AdminPanel = ({ onLogout }) => {
                 </button>
               </form>
               
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {categories.map(category => (
                   <div key={category} className="flex items-center justify-between bg-gray-700 p-2 rounded">
                     <span className="text-white capitalize text-sm">{category}</span>
@@ -966,12 +966,12 @@ const AdminPanel = ({ onLogout }) => {
         )}
         
         {activeTab === 'reviews' && (
-        <div className="bg-gray-800 p-6 rounded-lg mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-white">Manage Client Reviews</h2>
+        <div className="bg-gray-800 p-4 sm:p-6 rounded-lg mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
+            <h2 className="text-lg sm:text-xl font-semibold text-white">Manage Client Reviews</h2>
             <button
               onClick={downloadReviewsJSON}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+              className="px-3 py-2 sm:px-4 sm:py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm w-full sm:w-auto"
             >
               Download JSON
             </button>
@@ -1023,9 +1023,9 @@ const AdminPanel = ({ onLogout }) => {
         )}
         
         {activeTab === 'messages' && (
-        <div className="bg-gray-800 p-6 rounded-lg mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-white">Contact Messages</h2>
+        <div className="bg-gray-800 p-4 sm:p-6 rounded-lg mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-2 sm:space-y-0">
+            <h2 className="text-lg sm:text-xl font-semibold text-white">Contact Messages</h2>
             <span className="text-sm text-gray-400">
               {contacts.filter(c => !c.seen).length} unread messages
             </span>
@@ -1081,8 +1081,8 @@ const AdminPanel = ({ onLogout }) => {
         )}
         
         {activeTab === 'users' && currentUser?.role === 'admin' && (
-        <div className="bg-gray-800 p-6 rounded-lg mb-8">
-          <h2 className="text-xl font-semibold text-white mb-4">Add New User</h2>
+        <div className="bg-gray-800 p-4 sm:p-6 rounded-lg mb-6 sm:mb-8">
+          <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">Add New User</h2>
           <form onSubmit={addUser} className="space-y-4">
             <input
               type="text"
@@ -1128,8 +1128,8 @@ const AdminPanel = ({ onLogout }) => {
         )}
         
         {activeTab === 'packages' && (
-        <div className="bg-gray-800 p-6 rounded-lg mb-8">
-          <h2 className="text-xl font-semibold text-white mb-4">
+        <div className="bg-gray-800 p-4 sm:p-6 rounded-lg mb-6 sm:mb-8">
+          <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">
             {editingPackage ? 'Edit Package' : 'Add New Package'}
           </h2>
           <form onSubmit={editingPackage ? updatePackage : addPackage} className="space-y-4">
@@ -1232,8 +1232,8 @@ const AdminPanel = ({ onLogout }) => {
         </div>
         )}
         
-        <div className="bg-gray-800 p-6 rounded-lg">
-          <h2 className="text-xl font-semibold text-white mb-4">
+        <div className="bg-gray-800 p-4 sm:p-6 rounded-lg">
+          <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">
             {activeTab === 'portfolio' ? 'Manage Projects' : 
              activeTab === 'otherwork' ? 'Manage Works' : 
              activeTab === 'packages' ? 'Manage Packages' : 'Manage Reviews'}
@@ -1275,8 +1275,8 @@ const AdminPanel = ({ onLogout }) => {
               <div className="space-y-4">
                 {projects.map(project => (
                   <div key={project._id} className="bg-gray-700 p-4 rounded">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex-1">
+                    <div className="flex flex-col sm:flex-row justify-between items-start mb-2">
+                      <div className="flex-1 w-full sm:w-auto">
                         <h3 className="text-white font-semibold">{project.title}</h3>
                         <p className="text-gray-400 text-sm capitalize">{project.category}</p>
                         <p className="text-gray-300 text-sm mt-1">{project.description}</p>
@@ -1284,7 +1284,7 @@ const AdminPanel = ({ onLogout }) => {
                           View on YouTube
                         </a>
                       </div>
-                      <div className="flex gap-2 ml-4">
+                      <div className="flex flex-col sm:flex-row gap-2 mt-2 sm:mt-0 sm:ml-4">
                         <button
                           onClick={() => editProject(project)}
                           className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
