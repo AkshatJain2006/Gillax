@@ -13,8 +13,13 @@ const Portfolio = () => {
   useEffect(() => {
     const loadProjects = async () => {
       try {
+        console.log('API URL being used:', process.env.REACT_APP_API_URL || 'http://localhost:5000/api');
+        console.log('Making API call to fetch projects...');
         const data = await ApiService.getProjects();
+        console.log('Raw API response:', data);
         console.log('Loaded projects:', data);
+        console.log('Number of projects loaded:', data.length);
+        console.log('First project details:', data[0]);
         setProjects(data);
       } catch (error) {
         console.error('Failed to load projects:', error);

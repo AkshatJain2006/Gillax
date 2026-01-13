@@ -10,16 +10,23 @@ const ContactPage = () => {
     subject: '',
     message: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus(null);
+    
     try {
       await ApiService.createContact(formData);
-      alert('Thanks for reaching out! We\'ll get back to you soon.');
+      setSubmitStatus('success');
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
     } catch (error) {
       console.error('Failed to submit contact form:', error);
-      alert('Failed to send message. Please try again.');
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -29,6 +36,28 @@ const ContactPage = () => {
       [e.target.name]: e.target.value
     });
   };
+
+  // Quick contact buttons
+  const quickActions = [
+    { 
+      label: 'WhatsApp', 
+      action: () => window.open('https://wa.me/919646028153?text=Hi! I\'m interested in your video editing services.', '_blank'),
+      icon: '💬',
+      color: 'bg-green-500'
+    },
+    { 
+      label: 'Email', 
+      action: () => window.open('mailto:gillaxediting@gmail.com?subject=Video Editing Inquiry', '_blank'),
+      icon: '📧',
+      color: 'bg-blue-500'
+    },
+    { 
+      label: 'Instagram', 
+      action: () => window.open('https://instagram.com/gilla_x', '_blank'),
+      icon: '📸',
+      color: 'bg-pink-500'
+    }
+  ];
 
   return (
     <div className="py-20 px-8 bg-gradient-to-br from-gray-900 via-black to-gray-900 min-h-screen">
@@ -49,13 +78,34 @@ const ContactPage = () => {
         </motion.h2>
         
         <motion.p 
-          className="text-center text-gray-400 mb-12 text-lg"
+          className="text-center text-gray-400 mb-8 text-lg"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
           Ready to bring your vision to life? Get in touch with us today.
         </motion.p>
+        
+        {/* Quick Contact Actions */}
+        <motion.div
+          className="flex flex-wrap justify-center gap-4 mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          {quickActions.map((action, index) => (
+            <motion.button
+              key={action.label}
+              onClick={action.action}
+              className={`${action.color} hover:scale-105 transition-all duration-200 px-6 py-3 rounded-full text-white font-medium flex items-center space-x-2 shadow-lg`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <span className="text-lg">{action.icon}</span>
+              <span>{action.label}</span>
+            </motion.button>
+          ))}
+        </motion.div>
         
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Contact Info */}
@@ -104,28 +154,49 @@ const ContactPage = () => {
             <h3 className="text-2xl font-semibold mb-6 text-white">Send us a Message</h3>
             
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Success/Error Messages */}
+              {submitStatus === 'success' && (
+                <motion.div
+                  className="p-4 bg-green-500/20 border border-green-500/30 rounded-lg text-green-400 text-center"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  ✅ Message sent successfully! We'll get back to you soon.
+                </motion.div>
+              )}
+              
+              {submitStatus === 'error' && (
+                <motion.div
+                  className="p-4 bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 text-center"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  ❌ Failed to send message. Please try again or use WhatsApp.
+                </motion.div>
+              )}
+              
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-400 text-sm mb-2">Name *</label>
+                  <label className="block text-gray-400 text-sm mb-2 font-medium">Name *</label>
                   <input
                     type="text"
                     name="name"
                     placeholder="Your Name"
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none transition-all"
+                    className="w-full p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-400 text-sm mb-2">Email *</label>
+                  <label className="block text-gray-400 text-sm mb-2 font-medium">Email *</label>
                   <input
                     type="email"
                     name="email"
                     placeholder="your@email.com"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none transition-all"
+                    className="w-full p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                     required
                   />
                 </div>
@@ -133,51 +204,79 @@ const ContactPage = () => {
               
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-400 text-sm mb-2">Phone</label>
+                  <label className="block text-gray-400 text-sm mb-2 font-medium">Phone (Optional)</label>
                   <input
                     type="tel"
                     name="phone"
                     placeholder="+91 XXXXX XXXXX"
                     value={formData.phone}
                     onChange={handleChange}
-                    className="w-full p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none transition-all"
+                    className="w-full p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-400 text-sm mb-2">Subject *</label>
-                  <input
-                    type="text"
+                  <label className="block text-gray-400 text-sm mb-2 font-medium">Project Type *</label>
+                  <select
                     name="subject"
-                    placeholder="Project Subject"
                     value={formData.subject}
                     onChange={handleChange}
-                    className="w-full p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none transition-all"
+                    className="w-full p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
                     required
-                  />
+                  >
+                    <option value="">Select Project Type</option>
+                    <option value="Reels & Shorts">Reels & Shorts</option>
+                    <option value="Long Format Video">Long Format Video</option>
+                    <option value="Motion Graphics">Motion Graphics</option>
+                    <option value="3D Animation">3D Animation</option>
+                    <option value="Gaming Edit">Gaming Edit</option>
+                    <option value="Educational Content">Educational Content</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
               </div>
               
               <div>
-                <label className="block text-gray-400 text-sm mb-2">Message *</label>
+                <label className="block text-gray-400 text-sm mb-2 font-medium">Project Details *</label>
                 <textarea
                   name="message"
-                  placeholder="Tell us about your project, timeline, and any specific requirements..."
+                  placeholder="Tell us about your project:\n• What type of content?\n• Timeline/deadline?\n• Budget range?\n• Any specific requirements?"
                   value={formData.message}
                   onChange={handleChange}
-                  rows="5"
-                  className="w-full p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none resize-none transition-all"
+                  rows="6"
+                  className="w-full p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none transition-all"
                   required
                 />
               </div>
               
               <motion.button
                 type="submit"
-                className="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-700 rounded-lg text-white font-semibold relative overflow-hidden"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                disabled={isSubmitting}
+                className={`w-full py-4 rounded-lg text-white font-semibold relative overflow-hidden transition-all ${
+                  isSubmitting 
+                    ? 'bg-gray-600 cursor-not-allowed' 
+                    : 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'
+                }`}
+                whileHover={!isSubmitting ? { scale: 1.02 } : {}}
+                whileTap={!isSubmitting ? { scale: 0.98 } : {}}
               >
-                <span className="relative z-10">Send Message</span>
+                <span className="relative z-10 flex items-center justify-center space-x-2">
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span>Sending...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Send Message</span>
+                      <span>📤</span>
+                    </>
+                  )}
+                </span>
               </motion.button>
+              
+              <p className="text-center text-gray-500 text-sm">
+                Or reach us instantly via WhatsApp for faster response! 🚀
+              </p>
             </form>
           </motion.div>
         </div>

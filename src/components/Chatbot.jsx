@@ -43,11 +43,11 @@ const Chatbot = () => {
     }
     
     if (msg.includes('portfolio') || msg.includes('work') || msg.includes('sample')) {
-      return "Check out our work on YouTube: https://youtube.com/@GillaXStudio\n\nWe've worked with gaming channels, educational creators, tech reviewers, and lifestyle brands. Want to see something specific?";
+      return "Check out our work on YouTube: @Gilla_x\n\nWe've worked with gaming channels, educational creators, tech reviewers, and lifestyle brands. Want to see something specific?";
     }
     
     if (msg.includes('contact') || msg.includes('reach') || msg.includes('get in touch')) {
-      return "Let's connect! 🚀\n📧 contact@gillax.com\n📱 +91-XXXXXXXXXX\n🌐 https://gillax.com/contact\n\nOr fill out our contact form and we'll get back to you within 24 hours!";
+      return "Let's connect! 🚀\n📧 gillaxediting@gmail.com\n📱 +91- 96460 28153\n🌐 https://gillax.onrender.com/\n\nOr fill out our contact form and we'll get back to you within 24 hours!";
     }
     
     if (msg.includes('gaming') || msg.includes('smooth edit')) {
